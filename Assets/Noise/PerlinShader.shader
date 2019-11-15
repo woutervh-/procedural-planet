@@ -14,6 +14,7 @@ Shader "Custom/Perlin Shader"
         _Center ("Center", Vector) = (0, 0, 0)
         _Lacunarity ("Lacunarity", Float) = 2.3
         _Gain ("Gain", Float) = 0.4
+        _Octaves ("Octaves", Range(0, 24)) = 12
     }
 
     SubShader
@@ -49,6 +50,7 @@ Shader "Custom/Perlin Shader"
         float _Metallic;
         float _Lacunarity;
         float _Gain;
+        int _Octaves;
 
         float3 fade(float3 t) {
             return t * t * t * (t * (t * 6.0 - 15.0) + 10.0);
@@ -122,10 +124,9 @@ Shader "Custom/Perlin Shader"
 
         float4 noise(float3 p, float3 center, float frequency, float strength) {
             float4 sum = float4(0, 0, 0, 0);
-            for (int i=0; i<8; i++) {
-                float4 value = strength * perlin(center + p * frequency);
-                value.xyz *= frequency;
-                sum += value;
+            for (int i=0; i<_Octaves; i++) {
+                float4 value = perlin(center + p * frequency);
+                sum += strength * float4(value.xyz * frequency, value.w);
                 strength *= _Gain;
                 frequency *= _Lacunarity;
             }
@@ -133,7 +134,9 @@ Shader "Custom/Perlin Shader"
         }
 
         float4 Tessellation (VertexData v0, VertexData v1, VertexData v2) {
-            return UnityEdgeLengthBasedTessCull(v0.vertex, v1.vertex, v2.vertex, _EdgeLength, _Strength);
+            float maxStrength = _Strength * (pow(_Gain, _Octaves) - 1.0) / (_Gain - 1.0);
+            float maxStrengthScaled = mul(float4(maxStrength, 0, 0, 1), unity_ObjectToWorld);
+            return UnityEdgeLengthBasedTessCull(v0.vertex, v1.vertex, v2.vertex, _EdgeLength, maxStrengthScaled.x);
         }
 
         void VertexProgram (inout VertexData v) {
