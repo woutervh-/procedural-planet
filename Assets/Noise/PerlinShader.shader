@@ -1,15 +1,19 @@
+// Upgrade NOTE: replaced '_World2Object' with 'unity_WorldToObject'
+
 Shader "Custom/Perlin Shader"
 {
     Properties
     {
         _Gradients2D ("Gradients", 2D) = "white" {}
         _Permutation2D ("Permutation", 2D) = "white" {}
-        _Strength ("Strength", Range(0, 1)) = 0.5
-        _Frequency ("Frequency", Range(0, 255)) = 15
-        _Center ("Center", Vector) = (0, 0, 0)
         _EdgeLength ("Tessellation Edge Length", Range(2, 50)) = 15
         _Smoothness ("Smoothness", Range(0, 1)) = 0
         _Metallic ("Metallic", Range(0, 1)) = 0
+        _Strength ("Strength", Range(0, 1)) = 0.5
+        _Frequency ("Frequency", Range(0, 8)) = 2
+        _Center ("Center", Vector) = (0, 0, 0)
+        _Lacunarity ("Lacunarity", Float) = 2.3
+        _Gain ("Gain", Float) = 0.4
     }
 
     SubShader
@@ -43,6 +47,8 @@ Shader "Custom/Perlin Shader"
         float _EdgeLength;
         float _Smoothness;
         float _Metallic;
+        float _Lacunarity;
+        float _Gain;
 
         float3 fade(float3 t) {
             return t * t * t * (t * (t * 6.0 - 15.0) + 10.0);
@@ -95,22 +101,35 @@ Shader "Custom/Perlin Shader"
             float g = dot(c011, p011);
             float h = dot(c111, p111);
 
-            float k0 = b - a;
-            float k1 = c - a;
-            float k2 = e - a;
-            float k3 = a + d - b - c;
-            float k4 = a + f - b - e;
-            float k5 = a + g - c - e;
-            float k6 = b + c + e + h - a - d - f - g;
+            float k0 = a;
+            float k1 = (b - a);
+            float k2 = (c - a);
+            float k3 = (e - a);
+            float k4 = (a + d - b - c);
+            float k5 = (a + f - b - e);
+            float k6 = (a + g - c - e);
+            float k7 = (b + c + e + h - a - d - f - g);
 
-            float v = a + u.x * k0 + u.y * k1 + u.z * k2 + u.x * u.y * k3 + u.x * u.z * k4 + u.y * u.z * k5 + u.x * u.y * u.z * k6;
+            float v = k0 + k1 * u.x + k2 * u.y + k3 * u.z + k4 * u.x * u.y + k5 * u.x * u.z + k6 * u.y * u.z + k7 * u.x * u.y * u.z;
             float3 dv = du * float3(
-                k0 + u.y * k3 + u.z * k4 + u.y * u.z * k6,
-                k1 + u.x * k3 + u.z * k5 + u.x * u.z * k6,
-                k2 + u.x * k4 + u.y * k5 + u.x * u.y * k6
+                k1 + k4 * u.y + k5 * u.z + k7 * u.y * u.z,
+                k2 + k4 * u.x + k6 * u.z + k7 * u.y * u.z,
+                k3 + k5 * u.x + k6 * u.y + k7 * u.y * u.z
             );
 
             return float4(dv, v);
+        }
+
+        float4 noise(float3 p, float3 center, float frequency, float strength) {
+            float4 sum = float4(0, 0, 0, 0);
+            for (int i=0; i<8; i++) {
+                float4 value = strength * perlin(center + p * frequency);
+                value.xyz *= frequency;
+                sum += value;
+                strength *= _Gain;
+                frequency *= _Lacunarity;
+            }
+            return sum;
         }
 
         float4 Tessellation (VertexData v0, VertexData v1, VertexData v2) {
@@ -118,20 +137,18 @@ Shader "Custom/Perlin Shader"
         }
 
         void VertexProgram (inout VertexData v) {
+            // v.vertex.xyz = normalize(v.vertex.xyz) / 2;
             float3 tangent = v.tangent.xyz;
             float3 binormal = cross(v.normal, tangent) * (v.tangent.w * unity_WorldTransformParams.w);
-            float4 noise = _Strength * perlin(_Center + v.vertex.xyz * _Frequency); // Get noise derivative in xyz and noise value in w.
-            tangent += v.normal * (dot(tangent, noise.xyz) - noise.w); // Offset tangent by noise delta in the tangent's direction.
-            binormal += v.normal * (dot(binormal, noise.xyz) - noise.w); // Offset binormal by noise delta in the binormal's direction.
-            v.vertex.xyz += v.normal * noise.w;
+            float4 value = noise(v.vertex.xyz, _Center, _Frequency, _Strength); // Get noise derivative in xyz and noise value in w.
+            tangent += v.normal * (dot(tangent, value.xyz) - value.w); // Offset tangent by noise delta in the tangent's direction.
+            binormal += v.normal * (dot(binormal, value.xyz) - value.w); // Offset binormal by noise delta in the binormal's direction.
+            v.vertex.xyz += v.normal * value.w;
             v.normal = normalize(cross(binormal, tangent));
         }
 
         void SurfaceProgram (Input IN, inout SurfaceOutputStandard o) {
-            // float v1 = 1 - abs(perlin(_Center + IN.vertex.xyz * _Frequency));
-            // float v2 = perlin(_Center + IN.vertex.xyz * _Frequency * 2) / 2;
-            // float v = v1 + v2;
-            // float v = v1;
+            // o.Emission = float4(o.Normal, 1);
             o.Albedo = float4(1, 1, 1, 1);
             o.Smoothness = _Smoothness;
             o.Metallic = _Metallic;

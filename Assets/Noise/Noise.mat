@@ -77,10 +77,12 @@ Material:
     - _DetailNormalMapScale: 1
     - _DstBlend: 0
     - _EdgeLength: 6
-    - _Frequency: 15
+    - _Frequency: 2
+    - _Gain: 0.4
     - _GlossMapScale: 1
     - _Glossiness: 0.5
     - _GlossyReflections: 1
+    - _Lacunarity: 2.3
     - _Metallic: 0
     - _Mode: 0
     - _OcclusionStrength: 1
