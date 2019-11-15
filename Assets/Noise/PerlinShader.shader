@@ -56,10 +56,11 @@ Shader "Custom/Perlin Shader"
             return tex2Dlod(_Gradients2D, float4(t, 0, 0, 0)).rgb * 2.0 - 1.0;
         }
 
-        float perlin(float3 p) {
+        float4 perlin(float3 p) {
             float3 ip = fmod(floor(p), 256.0) / 256.0;
             float3 fp = p - floor(p);
             float3 u = fade(fp);
+            float3 du = fadeDerivative(fp);
 
             float4 permutation = tex2Dlod(_Permutation2D, float4(ip.xy, 0, 0));
             float aa = permutation.r + ip.z;
@@ -85,23 +86,31 @@ Shader "Custom/Perlin Shader"
             float3 p011 = fp + float3(0, -1, -1);
             float3 p111 = fp + float3(-1, -1, -1);
 
-            float a = lerp(dot(c000, p000), dot(c100, p100), u.x);
-            float b = lerp(dot(c010, p010), dot(c110, p110), u.x);
-            float c = lerp(dot(c001, p001), dot(c101, p101), u.x);
-            float d = lerp(dot(c011, p011), dot(c111, p111), u.x);
-            float e = lerp(a, b, u.y);
-            float f = lerp(c, d, u.y);
-            float g = lerp(e, f, u.z);
+            float a = dot(c000, p000);
+            float b = dot(c100, p100);
+            float c = dot(c010, p010);
+            float d = dot(c110, p110);
+            float e = dot(c001, p001);
+            float f = dot(c101, p101);
+            float g = dot(c011, p011);
+            float h = dot(c111, p111);
 
-            return (g + 1.0) / 2.0;
-        }
+            float k0 = b - a;
+            float k1 = c - a;
+            float k2 = e - a;
+            float k3 = a + d - b - c;
+            float k4 = a + f - b - e;
+            float k5 = a + g - c - e;
+            float k6 = b + c + e + h - a - d - f - g;
 
-        float3 perlinNormal(float3 p) {
-            float3 ip = fmod(floor(p), 256.0) / 256.0;
-            float3 fp = p - floor(p);
-            float3 du = fadeDerivative(fp);
+            float v = a + u.x * k0 + u.y * k1 + u.z * k2 + u.x * u.y * k3 + u.x * u.z * k4 + u.y * u.z * k5 + u.x * u.y * u.z * k6;
+            float3 dv = du * float3(
+                k0 + u.y * k3 + u.z * k4 + u.y * u.z * k6,
+                k1 + u.x * k3 + u.z * k5 + u.x * u.z * k6,
+                k2 + u.x * k4 + u.y * k5 + u.x * u.y * k6
+            );
 
-            
+            return float4(dv, v);
         }
 
         float4 Tessellation (VertexData v0, VertexData v1, VertexData v2) {
@@ -109,18 +118,14 @@ Shader "Custom/Perlin Shader"
         }
 
         void VertexProgram (inout VertexData v) {
-            v.vertex.xyz = normalize(v.vertex.xyz) / 2;
+            float3 tangent = v.tangent.xyz;
+            float3 binormal = cross(v.normal, tangent) * (v.tangent.w * unity_WorldTransformParams.w);
 
-            float3 binormal = cross(v.normal, v.tangent.xyz) * (v.tangent.w * unity_WorldTransformParams.w);
-            float s11 = perlin(_Center + (v.vertex - 0.001 * v.tangent.xyz) * _Frequency);
-            float s12 = perlin(_Center + (v.vertex + 0.001 * v.tangent.xyz) * _Frequency);
-            float s21 = perlin(_Center + (v.vertex - 0.001 * binormal) * _Frequency);
-            float s22 = perlin(_Center + (v.vertex + 0.001 * binormal) * _Frequency);
-            float3 n1 = (s12 - s11) / 2.0 * _Strength * v.normal + 0.001 * v.tangent.xyz;
-            float3 n2 = (s22 - s21) / 2.0 * _Strength * v.normal + 0.001 * binormal;
-
-            v.vertex.xyz += v.normal * _Strength * perlin(_Center + v.vertex.xyz * _Frequency);
-            v.normal = normalize(cross(n2, n1));
+            float4 noise = _Strength * perlin(_Center + v.vertex.xyz * _Frequency);
+            tangent += v.normal * (dot(tangent, noise.xyz) - noise.w);
+            binormal += v.normal * (dot(binormal, noise.xyz) - noise.w);
+            v.vertex.xyz += v.normal * noise.w;
+            v.normal = normalize(cross(binormal, tangent));
         }
 
         void SurfaceProgram (Input IN, inout SurfaceOutputStandard o) {
