@@ -120,10 +120,9 @@ Shader "Custom/Perlin Shader"
         void VertexProgram (inout VertexData v) {
             float3 tangent = v.tangent.xyz;
             float3 binormal = cross(v.normal, tangent) * (v.tangent.w * unity_WorldTransformParams.w);
-
-            float4 noise = _Strength * perlin(_Center + v.vertex.xyz * _Frequency);
-            tangent += v.normal * (dot(tangent, noise.xyz) - noise.w);
-            binormal += v.normal * (dot(binormal, noise.xyz) - noise.w);
+            float4 noise = _Strength * perlin(_Center + v.vertex.xyz * _Frequency); // Get noise derivative in xyz and noise value in w.
+            tangent += v.normal * (dot(tangent, noise.xyz) - noise.w); // Offset tangent by noise delta in the tangent's direction.
+            binormal += v.normal * (dot(binormal, noise.xyz) - noise.w); // Offset binormal by noise delta in the binormal's direction.
             v.vertex.xyz += v.normal * noise.w;
             v.normal = normalize(cross(binormal, tangent));
         }
