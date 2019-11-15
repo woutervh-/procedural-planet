@@ -48,6 +48,10 @@ Shader "Custom/Perlin Shader"
             return t * t * t * (t * (t * 6.0 - 15.0) + 10.0);
         }
 
+        float3 fadeDerivative(float3 t) {
+            return 30.0 * t * t * (1.0 + t * (t - 2.0));
+        }
+
         float3 gradient(float t) {
             return tex2Dlod(_Gradients2D, float4(t, 0, 0, 0)).rgb * 2.0 - 1.0;
         }
@@ -63,18 +67,45 @@ Shader "Custom/Perlin Shader"
             float ba = permutation.b + ip.z;
             float bb = permutation.a + ip.z;
 
-            float x1, x2, y1, y2;
-            x1 = lerp(dot(gradient(aa), fp + float3(0, 0, 0)), dot(gradient(ba), fp + float3(-1, 0, 0)), u.x);
-            x2 = lerp(dot(gradient(ab), fp + float3(0, -1, 0)), dot(gradient(bb), fp + float3(-1, -1, 0)), u.x);
-            y1 = lerp(x1, x2, u.y);
-            x1 = lerp(dot(gradient(aa + 1.0 / 256.0), fp + float3(0, 0, -1)), dot(gradient(ba + 1.0 / 256.0), fp + float3(-1, 0, -1)), u.x);
-            x2 = lerp(dot(gradient(ab + 1.0 / 256.0), fp + float3(0, -1, -1)), dot(gradient(bb + 1.0 / 256.0), fp + float3(-1, -1, -1)), u.x);
-            y2 = lerp(x1, x2, u.y);
-            return (lerp(y1, y2, u.z) + 1.0) / 2.0;
+            float3 c000 = gradient(aa);
+            float3 c100 = gradient(ba);
+            float3 c010 = gradient(ab);
+            float3 c110 = gradient(bb);
+            float3 c001 = gradient(aa + 1.0 / 256.0);
+            float3 c101 = gradient(ba + 1.0 / 256.0);
+            float3 c011 = gradient(ab + 1.0 / 256.0);
+            float3 c111 = gradient(bb + 1.0 / 256.0);
+
+            float3 p000 = fp + float3(0, 0, 0);
+            float3 p100 = fp + float3(-1, 0, 0);
+            float3 p010 = fp + float3(0, -1, 0);
+            float3 p110 = fp + float3(-1, -1, 0);
+            float3 p001 = fp + float3(0, 0, -1);
+            float3 p101 = fp + float3(-1, 0, -1);
+            float3 p011 = fp + float3(0, -1, -1);
+            float3 p111 = fp + float3(-1, -1, -1);
+
+            float a = lerp(dot(c000, p000), dot(c100, p100), u.x);
+            float b = lerp(dot(c010, p010), dot(c110, p110), u.x);
+            float c = lerp(dot(c001, p001), dot(c101, p101), u.x);
+            float d = lerp(dot(c011, p011), dot(c111, p111), u.x);
+            float e = lerp(a, b, u.y);
+            float f = lerp(c, d, u.y);
+            float g = lerp(e, f, u.z);
+
+            return (g + 1.0) / 2.0;
+        }
+
+        float3 perlinNormal(float3 p) {
+            float3 ip = fmod(floor(p), 256.0) / 256.0;
+            float3 fp = p - floor(p);
+            float3 du = fadeDerivative(fp);
+
+            
         }
 
         float4 Tessellation (VertexData v0, VertexData v1, VertexData v2) {
-            return UnityEdgeLengthBasedTessCull(v0.vertex, v1.vertex, v2.vertex, _EdgeLength, 0);
+            return UnityEdgeLengthBasedTessCull(v0.vertex, v1.vertex, v2.vertex, _EdgeLength, _Strength);
         }
 
         void VertexProgram (inout VertexData v) {
