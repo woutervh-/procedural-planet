@@ -140,14 +140,14 @@ Shader "Custom/Perlin Shader"
         }
 
         void VertexProgram (inout VertexData v) {
-            // v.vertex.xyz = normalize(v.vertex.xyz) / 2;
+            v.vertex.xyz = normalize(v.vertex.xyz);
             float3 tangent = v.tangent.xyz;
             float3 binormal = cross(v.normal, tangent) * (v.tangent.w * unity_WorldTransformParams.w);
             float4 value = noise(v.vertex.xyz, _Center, _Frequency, _Strength); // Get noise derivative in xyz and noise value in w.
             tangent += v.normal * (dot(tangent, value.xyz) - value.w); // Offset tangent by noise delta in the tangent's direction.
             binormal += v.normal * (dot(binormal, value.xyz) - value.w); // Offset binormal by noise delta in the binormal's direction.
             v.vertex.xyz += v.normal * value.w;
-            v.normal = normalize(cross(binormal, tangent));
+            v.normal = normalize(cross(tangent, binormal));
         }
 
         void SurfaceProgram (Input IN, inout SurfaceOutputStandard o) {

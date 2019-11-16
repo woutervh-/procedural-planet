@@ -11,13 +11,16 @@ public class FlyCamera : MonoBehaviour
     public float speedMultiplySpeed = 2f;
     public float speedMultiply = 1f;
 
-    private bool cursorLocked = true;
+    private bool cursorLocked = false;
     private Quaternion rotation = Quaternion.identity;
 
     private void Start()
     {
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
+        if (cursorLocked)
+        {
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
+        }
     }
 
     void Update()

@@ -49,6 +49,8 @@ public class PlanetFace
         mesh.vertices = vertices;
         mesh.triangles = triangles;
         mesh.normals = vertices;
+        mesh.RecalculateTangents();
+        mesh.RecalculateBounds();
 
         return mesh;
     }
