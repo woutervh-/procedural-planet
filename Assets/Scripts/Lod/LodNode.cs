@@ -7,9 +7,6 @@ public class LodNode : IDisposable
     private const int CHUNK_RESOLUTION = 16;
     private const float DETAIL_FACTOR = 512f;
 
-    public static Vector2 RootMin = -Vector2.one;
-    public static Vector2 RootMax = Vector2.one;
-
     private LodNode parent;
     private LodProperties lodProperties;
     private int lodLevel;
