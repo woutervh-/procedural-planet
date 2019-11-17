@@ -12,78 +12,34 @@ public class LodNode : IDisposable
 
     private LodNode parent;
     private LodProperties lodProperties;
-    private LodNode[] children;
     private int lodLevel;
+    private Vector3 origin;
+    private Vector3 forward;
+    private Vector3 right;
+    private LodNode[] children;
     private GameObject gameObject;
     private MeshFilter meshFilter;
     private MeshRenderer meshRenderer;
-    private Vector3 up;
-    private Vector2 min;
-    private Vector2 max;
     private Mesh plane;
 
-    public LodNode(LodNode parent, LodProperties lodProperties, int lodLevel, Vector3 up, Vector2 min, Vector2 max)
+    public LodNode(LodNode parent, LodProperties lodProperties, int lodLevel, Vector3 origin, Vector3 forward, Vector3 right)
     {
         this.parent = parent;
         this.lodProperties = lodProperties;
-        this.children = null;
         this.lodLevel = lodLevel;
+        this.origin = origin;
+        this.forward = forward;
+        this.right = right;
+
+        this.children = null;
         this.gameObject = new GameObject("Chunk " + lodLevel);
         this.meshFilter = this.gameObject.AddComponent<MeshFilter>();
         this.meshRenderer = this.gameObject.AddComponent<MeshRenderer>();
-        this.up = up;
-        this.min = min;
-        this.max = max;
-        this.plane = new LodFace(LodNode.CHUNK_RESOLUTION, up, min, max).GenerateMesh();
+        this.plane = new LodFace(LodNode.CHUNK_RESOLUTION, origin, lodProperties.up, forward, right).GenerateMesh();
 
         this.meshRenderer.sharedMaterial = lodProperties.material;
-        this.meshFilter.transform.parent = lodProperties.gameObject.transform;
+        this.meshFilter.transform.SetParent(lodProperties.gameObject.transform, false);
         this.meshFilter.mesh = this.plane;
-    }
-
-    public Vector2 BottomLeft()
-    {
-        return this.min;
-    }
-
-    public Vector2 MiddleLeft()
-    {
-        return new Vector2(this.min.x, (this.min.y + this.max.y) / 2f);
-    }
-
-    public Vector2 TopLeft()
-    {
-        return new Vector2(this.min.x, this.max.y);
-    }
-
-    public Vector2 CenterBottom()
-    {
-        return new Vector2((this.min.x + this.max.x) / 2f, this.min.y);
-    }
-
-    public Vector2 CenterMiddle()
-    {
-        return new Vector2((this.min.x + this.max.x) / 2f, (this.min.y + this.max.y) / 2f);
-    }
-
-    public Vector2 CenterTop()
-    {
-        return new Vector2((this.min.x + this.max.x) / 2f, this.max.y);
-    }
-
-    public Vector2 BottomRight()
-    {
-        return new Vector2(this.max.x, this.min.y);
-    }
-
-    public Vector2 MiddleRight()
-    {
-        return new Vector2(this.max.x, (this.min.y + this.max.y) / 2f);
-    }
-
-    public Vector2 TopRight()
-    {
-        return this.max;
     }
 
     public void Dispose()
@@ -135,11 +91,13 @@ public class LodNode : IDisposable
             return;
         }
         this.meshRenderer.enabled = false;
+        Vector3 childFoward = this.forward / 2f;
+        Vector3 childRight = this.right / 2f;
         this.children = new LodNode[4];
-        this.children[0] = new LodNode(this, this.lodProperties, this.lodLevel + 1, this.up, this.BottomLeft(), this.CenterMiddle());
-        this.children[1] = new LodNode(this, this.lodProperties, this.lodLevel + 1, this.up, this.CenterBottom(), this.MiddleRight());
-        this.children[2] = new LodNode(this, this.lodProperties, this.lodLevel + 1, this.up, this.MiddleLeft(), this.CenterTop());
-        this.children[3] = new LodNode(this, this.lodProperties, this.lodLevel + 1, this.up, this.CenterMiddle(), this.TopRight());
+        this.children[0] = new LodNode(this, this.lodProperties, this.lodLevel + 1, this.origin - childRight - childFoward, childFoward, childRight);
+        this.children[1] = new LodNode(this, this.lodProperties, this.lodLevel + 1, this.origin + childRight - childFoward, childFoward, childRight);
+        this.children[2] = new LodNode(this, this.lodProperties, this.lodLevel + 1, this.origin - childRight + childFoward, childFoward, childRight);
+        this.children[3] = new LodNode(this, this.lodProperties, this.lodLevel + 1, this.origin + childRight + childFoward, childFoward, childRight);
     }
 
     private void Merge()

@@ -18,12 +18,13 @@ public class LodManager : MonoBehaviour
             this.rootGameObjects[i] = new GameObject("Face (" + i + ")");
             this.rootGameObjects[i].transform.parent = this.transform;
 
+            Vector3 up = LodManager.directions[i];
             LodProperties lodProperties = new LodProperties();
             lodProperties.gameObject = this.rootGameObjects[i];
             lodProperties.material = this.material;
+            lodProperties.up = up;
 
-            Vector3 up = LodManager.directions[i];
-            this.roots[i] = new LodNode(null, lodProperties, 0, LodManager.directions[i], LodNode.RootMin, LodNode.RootMax);
+            this.roots[i] = new LodNode(null, lodProperties, 0, up, LodFace.GetForward(up), LodFace.GetRight(up));
         }
     }
 
