@@ -26,10 +26,10 @@ public class LodHeightGenerator
         float fx1 = this.perlin.GetValue(position.x + h, position.y, position.z);
         float fy1 = this.perlin.GetValue(position.x, position.y + h, position.z);
         float fz1 = this.perlin.GetValue(position.x, position.y, position.z + h);
-        Vector3 df = new Vector3((fx0 + fx1) / 2f / h, (fy0 + fy1) / 2f / h, (fz0 + fz1) / 2f / h);
+        // Vector3 df = new Vector3((fx0 + fx1) / 2f / h, (fy0 + fy1) / 2f / h, (fz0 + fz1) / 2f / h);
 
         // Analytical method.
-        // Vector3 df = this.perlin.GetDerivative(position.x, position.y, position.z) / 2f;
+        Vector3 df = this.perlin.GetDerivative(position.x, position.y, position.z) / 2f;
 
         return (normal - df).normalized;
     }
