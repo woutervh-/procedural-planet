@@ -27,11 +27,9 @@ public class LodFace
         return Vector3.Cross(up, LodFace.GetForward(up));
     }
 
-    public static float GetEdgeLengthSqr(int resolution, Vector3 forward, Vector3 right)
+    public static float GetEdgeLength(int resolution)
     {
-        float percent = 1f / (resolution - 1);
-        float edgeLengthSqr = Mathf.Max(forward.sqrMagnitude, right.sqrMagnitude) * percent * 2f;
-        return edgeLengthSqr;
+        return 2f / (resolution - 1);
     }
 
     public Mesh GenerateMesh()
@@ -51,8 +49,8 @@ public class LodFace
                 Vector3 pointOnUnitCube = this.origin + Mathf.Lerp(-1f, 1f, percent.x) * this.forward + Mathf.Lerp(-1f, 1f, percent.y) * this.right;
                 Vector3 pointOnUnitSphere = pointOnUnitCube.normalized;
 
-                // vertices[vertexIndex] = pointOnUnitCube;
-                // normals[vertexIndex] = this.up;
+                vertices[vertexIndex] = pointOnUnitCube;
+                normals[vertexIndex] = this.up;
 
                 vertices[vertexIndex] = pointOnUnitSphere;
                 normals[vertexIndex] = pointOnUnitSphere;

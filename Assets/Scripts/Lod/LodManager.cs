@@ -32,10 +32,6 @@ public class LodManager : MonoBehaviour
     {
         foreach (LodNode root in this.roots)
         {
-            if (Input.GetKeyDown(KeyCode.D))
-            {
-                root.PrintDiagnostics();
-            }
             root.SplitRecursive();
             root.MergeRecursive();
         }
