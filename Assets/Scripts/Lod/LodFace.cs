@@ -23,7 +23,7 @@ public class LodFace
             {
                 int vertexIndex = x + this.resolution * y;
                 Vector2 percent = new Vector2(x, y) / (resolution - 1);
-                Vector3 pointOnUnitCube = Vector3.up + (percent.x - 0.5f) * 2f * Vector3.forward + (percent.y - 0.5f) * 2f * Vector3.right;
+                Vector3 pointOnUnitCube = (percent.x - 0.5f) * 2f * Vector3.forward + (percent.y - 0.5f) * 2f * Vector3.right;
                 // Vector3 pointOnUnitSphere = pointOnUnitCube.normalized;
                 Vector3 pointOnUnitSphere = pointOnUnitCube;
                 vertices[vertexIndex] = pointOnUnitSphere;
