@@ -2,24 +2,37 @@ using UnityEngine;
 
 public class LodManager : MonoBehaviour
 {
+    private static Vector3[] directions = { Vector3.up, Vector3.down, Vector3.left, Vector3.right, Vector3.forward, Vector3.back };
+
     public Material material;
 
-    private LodNode root;
+    private GameObject[] rootGameObjects;
+    private LodNode[] roots;
 
     void Start()
     {
-        LodProperties lodProperties = new LodProperties();
-        lodProperties.gameObject = this.gameObject;
-        lodProperties.material = this.material;
-        this.root = new LodNode(null, lodProperties, 0, LodNode.RootMin, LodNode.RootMax);
+        this.rootGameObjects = new GameObject[6];
+        this.roots = new LodNode[6];
+        for (int i = 0; i < 6; i++)
+        {
+            this.rootGameObjects[i] = new GameObject("Face (" + i + ")");
+            this.rootGameObjects[i].transform.parent = this.transform;
+
+            LodProperties lodProperties = new LodProperties();
+            lodProperties.gameObject = this.rootGameObjects[i];
+            lodProperties.material = this.material;
+
+            Vector3 up = LodManager.directions[i];
+            this.roots[i] = new LodNode(null, lodProperties, 0, LodManager.directions[i], LodNode.RootMin, LodNode.RootMax);
+        }
     }
 
     void Update()
     {
-        if (this.root.ShouldSplit())
+        foreach (LodNode root in this.roots)
         {
-            this.root.SplitRecursive();
+            root.SplitRecursive();
+            root.MergeRecursive();
         }
-        this.root.MergeRecursive();
     }
 }

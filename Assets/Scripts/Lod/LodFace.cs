@@ -3,10 +3,30 @@ using UnityEngine;
 public class LodFace
 {
     private int resolution;
+    private Vector3 up;
+    private Vector3 min;
+    private Vector3 forward;
+    private Vector3 right;
 
-    public LodFace(int resolution)
+    public LodFace(int resolution, Vector3 up, Vector2 min, Vector2 max)
     {
         this.resolution = resolution;
+        this.up = up;
+        this.forward = LodFace.GetForward(up);
+        this.right = LodFace.GetRight(up);
+        this.min = this.forward * min.x + this.right * min.y;
+        this.forward *= (max.x - min.x);
+        this.right *= (max.y - min.y);
+    }
+
+    public static Vector3 GetForward(Vector3 up)
+    {
+        return new Vector3(up.y, up.z, up.x);
+    }
+
+    public static Vector3 GetRight(Vector3 up)
+    {
+        return Vector3.Cross(up, LodFace.GetForward(up));
     }
 
     public Mesh GenerateMesh()
@@ -23,11 +43,10 @@ public class LodFace
             {
                 int vertexIndex = x + this.resolution * y;
                 Vector2 percent = new Vector2(x, y) / (resolution - 1);
-                Vector3 pointOnUnitCube = (percent.x - 0.5f) * 2f * Vector3.forward + (percent.y - 0.5f) * 2f * Vector3.right;
-                // Vector3 pointOnUnitSphere = pointOnUnitCube.normalized;
-                Vector3 pointOnUnitSphere = pointOnUnitCube;
+                Vector3 pointOnUnitCube = this.up + this.min + percent.x * this.forward + percent.y * this.right;
+                Vector3 pointOnUnitSphere = pointOnUnitCube.normalized;
                 vertices[vertexIndex] = pointOnUnitSphere;
-                normals[vertexIndex] = Vector3.up;
+                normals[vertexIndex] = pointOnUnitSphere;
 
                 if (x != resolution - 1 && y != resolution - 1)
                 {

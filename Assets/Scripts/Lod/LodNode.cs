@@ -7,7 +7,6 @@ public class LodNode : IDisposable
     private const int CHUNK_RESOLUTION = 16;
     private const float DETAIL_FACTOR = 512f;
 
-    private static Mesh plane = new LodFace(LodNode.CHUNK_RESOLUTION).GenerateMesh();
     public static Vector2 RootMin = -Vector2.one;
     public static Vector2 RootMax = Vector2.one;
 
@@ -18,42 +17,28 @@ public class LodNode : IDisposable
     private GameObject gameObject;
     private MeshFilter meshFilter;
     private MeshRenderer meshRenderer;
+    private Vector3 up;
     private Vector2 min;
     private Vector2 max;
+    private Mesh plane;
 
-    public LodNode(LodNode parent, LodProperties lodProperties, int lodLevel, Vector2 min, Vector2 max)
+    public LodNode(LodNode parent, LodProperties lodProperties, int lodLevel, Vector3 up, Vector2 min, Vector2 max)
     {
         this.parent = parent;
         this.lodProperties = lodProperties;
         this.children = null;
         this.lodLevel = lodLevel;
-        this.gameObject = new GameObject("Face " + lodLevel);
+        this.gameObject = new GameObject("Chunk " + lodLevel);
         this.meshFilter = this.gameObject.AddComponent<MeshFilter>();
         this.meshRenderer = this.gameObject.AddComponent<MeshRenderer>();
+        this.up = up;
         this.min = min;
         this.max = max;
+        this.plane = new LodFace(LodNode.CHUNK_RESOLUTION, up, min, max).GenerateMesh();
 
         this.meshRenderer.sharedMaterial = lodProperties.material;
         this.meshFilter.transform.parent = lodProperties.gameObject.transform;
-        this.meshFilter.transform.localPosition = this.LocalPosition();
-        this.meshFilter.transform.localScale = this.LocalScale();
-        this.meshFilter.mesh = LodNode.plane;
-    }
-
-    public float Scale()
-    {
-        return (this.max.x - this.min.x) / (LodNode.RootMax.x - LodNode.RootMin.x);
-    }
-
-    public Vector3 LocalScale()
-    {
-        float scale = this.Scale();
-        return new Vector3(scale, scale, scale);
-    }
-
-    public Vector3 LocalPosition()
-    {
-        return new Vector3(this.min.x, 0f, this.min.y) - new Vector3(LodNode.RootMin.x, 0f, LodNode.RootMin.y) * this.Scale();
+        this.meshFilter.mesh = this.plane;
     }
 
     public Vector2 BottomLeft()
@@ -151,10 +136,10 @@ public class LodNode : IDisposable
         }
         this.meshRenderer.enabled = false;
         this.children = new LodNode[4];
-        this.children[0] = new LodNode(this, this.lodProperties, this.lodLevel + 1, this.BottomLeft(), this.CenterMiddle());
-        this.children[1] = new LodNode(this, this.lodProperties, this.lodLevel + 1, this.CenterBottom(), this.MiddleRight());
-        this.children[2] = new LodNode(this, this.lodProperties, this.lodLevel + 1, this.MiddleLeft(), this.CenterTop());
-        this.children[3] = new LodNode(this, this.lodProperties, this.lodLevel + 1, this.CenterMiddle(), this.TopRight());
+        this.children[0] = new LodNode(this, this.lodProperties, this.lodLevel + 1, this.up, this.BottomLeft(), this.CenterMiddle());
+        this.children[1] = new LodNode(this, this.lodProperties, this.lodLevel + 1, this.up, this.CenterBottom(), this.MiddleRight());
+        this.children[2] = new LodNode(this, this.lodProperties, this.lodLevel + 1, this.up, this.MiddleLeft(), this.CenterTop());
+        this.children[3] = new LodNode(this, this.lodProperties, this.lodLevel + 1, this.up, this.CenterMiddle(), this.TopRight());
     }
 
     private void Merge()
