@@ -5,12 +5,14 @@ public class LodManager : MonoBehaviour
     private static Vector3[] directions = { Vector3.up, Vector3.down, Vector3.left, Vector3.right, Vector3.forward, Vector3.back };
 
     public Material material;
+    private LodHeightGenerator heightGenerator;
 
     private GameObject[] rootGameObjects;
     private LodNode[] roots;
 
     void Start()
     {
+        this.heightGenerator = new LodHeightGenerator(new Perlin(0));
         this.rootGameObjects = new GameObject[6];
         this.roots = new LodNode[6];
         for (int i = 0; i < 6; i++)
@@ -23,6 +25,7 @@ public class LodManager : MonoBehaviour
             lodProperties.gameObject = this.rootGameObjects[i];
             lodProperties.material = this.material;
             lodProperties.up = up;
+            lodProperties.heightGenerator = this.heightGenerator;
 
             this.roots[i] = new LodNode(null, lodProperties, 0, up, LodFace.GetForward(up), LodFace.GetRight(up));
         }

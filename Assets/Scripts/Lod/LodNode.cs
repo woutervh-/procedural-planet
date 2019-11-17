@@ -35,7 +35,7 @@ public class LodNode : IDisposable
 
         this.meshFilter = this.gameObject.AddComponent<MeshFilter>();
         this.meshRenderer = this.gameObject.AddComponent<MeshRenderer>();
-        this.plane = new LodFace(LodNode.CHUNK_RESOLUTION, origin, lodProperties.up, forward, right).GenerateMesh();
+        this.plane = new LodFace(LodNode.CHUNK_RESOLUTION, lodProperties.heightGenerator, origin, lodProperties.up, forward, right).GenerateMesh();
 
         this.meshRenderer.sharedMaterial = lodProperties.material;
         this.meshFilter.mesh = this.plane;

@@ -65,12 +65,12 @@ public class Perlin
 
     public float GetValue(float x, float y, float z)
     {
-        int ix = (int)x % Perlin.SIZE;
-        int iy = (int)y % Perlin.SIZE;
-        int iz = (int)z % Perlin.SIZE;
-        float fx = x - (int)x;
-        float fy = y - (int)y;
-        float fz = z - (int)z;
+        int ix = Perlin.FlooredRemainder(Mathf.FloorToInt(x), Perlin.SIZE);
+        int iy = Perlin.FlooredRemainder(Mathf.FloorToInt(y), Perlin.SIZE);
+        int iz = Perlin.FlooredRemainder(Mathf.FloorToInt(z), Perlin.SIZE);
+        float fx = x - Mathf.FloorToInt(x);
+        float fy = y - Mathf.FloorToInt(y);
+        float fz = z - Mathf.FloorToInt(z);
         float u = Perlin.Fade(fx);
         float v = Perlin.Fade(fy);
         float w = Perlin.Fade(fz);
@@ -105,6 +105,18 @@ public class Perlin
         );
         y2 = Mathf.Lerp(x1, x2, v);
         return (Mathf.Lerp(y1, y2, w) + 1f) / 2f;
+    }
+
+    private static int FlooredRemainder(int a, int n)
+    {
+        if (a >= 0)
+        {
+            return a % n;
+        }
+        else
+        {
+            return n + a % n;
+        }
     }
 
     private static float Fade(float t)

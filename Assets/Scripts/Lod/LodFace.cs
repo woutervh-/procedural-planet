@@ -3,14 +3,16 @@ using UnityEngine;
 public class LodFace
 {
     private int resolution;
+    private LodHeightGenerator heightGenerator;
     private Vector3 origin;
     private Vector3 up;
     private Vector3 forward;
     private Vector3 right;
 
-    public LodFace(int resolution, Vector3 origin, Vector3 up, Vector3 forward, Vector3 right)
+    public LodFace(int resolution, LodHeightGenerator heightGenerator, Vector3 origin, Vector3 up, Vector3 forward, Vector3 right)
     {
         this.resolution = resolution;
+        this.heightGenerator = heightGenerator;
         this.origin = origin;
         this.up = up;
         this.forward = forward;
@@ -49,10 +51,8 @@ public class LodFace
                 Vector3 pointOnUnitCube = this.origin + Mathf.Lerp(-1f, 1f, percent.x) * this.forward + Mathf.Lerp(-1f, 1f, percent.y) * this.right;
                 Vector3 pointOnUnitSphere = pointOnUnitCube.normalized;
 
-                vertices[vertexIndex] = pointOnUnitCube;
-                normals[vertexIndex] = this.up;
-
-                vertices[vertexIndex] = pointOnUnitSphere;
+                float height = this.heightGenerator.GetHeight(pointOnUnitSphere);
+                vertices[vertexIndex] = pointOnUnitSphere * height;
                 normals[vertexIndex] = pointOnUnitSphere;
 
                 if (x != resolution - 1 && y != resolution - 1)
