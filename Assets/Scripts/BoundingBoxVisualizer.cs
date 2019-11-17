@@ -5,29 +5,29 @@ public class BoundingBoxVisualizer : MonoBehaviour
     void OnDrawGizmos()
     {
         {
-            MeshFilter filter = GetComponent<MeshFilter>();
-            if (filter)
+            MeshRenderer renderer = GetComponent<MeshRenderer>();
+            if (renderer)
             {
-                this.ShowBounds(filter);
+                this.ShowBounds(renderer);
             }
         }
-        MeshFilter[] filters = this.GetComponentsInChildren<MeshFilter>(false);
-        foreach (MeshFilter filter in filters)
+        MeshRenderer[] renderers = this.GetComponentsInChildren<MeshRenderer>(false);
+        foreach (MeshRenderer renderer in renderers)
         {
-            this.ShowBounds(filter);
+            this.ShowBounds(renderer);
         }
     }
 
-    void ShowBounds(MeshFilter filter)
+    void ShowBounds(MeshRenderer renderer)
     {
-        Vector3 p000 = filter.transform.TransformPoint(new Vector3(filter.mesh.bounds.min.x, filter.mesh.bounds.min.y, filter.mesh.bounds.min.z));
-        Vector3 p001 = filter.transform.TransformPoint(new Vector3(filter.mesh.bounds.min.x, filter.mesh.bounds.min.y, filter.mesh.bounds.max.z));
-        Vector3 p010 = filter.transform.TransformPoint(new Vector3(filter.mesh.bounds.min.x, filter.mesh.bounds.max.y, filter.mesh.bounds.min.z));
-        Vector3 p011 = filter.transform.TransformPoint(new Vector3(filter.mesh.bounds.min.x, filter.mesh.bounds.max.y, filter.mesh.bounds.max.z));
-        Vector3 p100 = filter.transform.TransformPoint(new Vector3(filter.mesh.bounds.max.x, filter.mesh.bounds.min.y, filter.mesh.bounds.min.z));
-        Vector3 p101 = filter.transform.TransformPoint(new Vector3(filter.mesh.bounds.max.x, filter.mesh.bounds.min.y, filter.mesh.bounds.max.z));
-        Vector3 p110 = filter.transform.TransformPoint(new Vector3(filter.mesh.bounds.max.x, filter.mesh.bounds.max.y, filter.mesh.bounds.min.z));
-        Vector3 p111 = filter.transform.TransformPoint(new Vector3(filter.mesh.bounds.max.x, filter.mesh.bounds.max.y, filter.mesh.bounds.max.z));
+        Vector3 p000 = new Vector3(renderer.bounds.min.x, renderer.bounds.min.y, renderer.bounds.min.z);
+        Vector3 p001 = new Vector3(renderer.bounds.min.x, renderer.bounds.min.y, renderer.bounds.max.z);
+        Vector3 p010 = new Vector3(renderer.bounds.min.x, renderer.bounds.max.y, renderer.bounds.min.z);
+        Vector3 p011 = new Vector3(renderer.bounds.min.x, renderer.bounds.max.y, renderer.bounds.max.z);
+        Vector3 p100 = new Vector3(renderer.bounds.max.x, renderer.bounds.min.y, renderer.bounds.min.z);
+        Vector3 p101 = new Vector3(renderer.bounds.max.x, renderer.bounds.min.y, renderer.bounds.max.z);
+        Vector3 p110 = new Vector3(renderer.bounds.max.x, renderer.bounds.max.y, renderer.bounds.min.z);
+        Vector3 p111 = new Vector3(renderer.bounds.max.x, renderer.bounds.max.y, renderer.bounds.max.z);
 
         Gizmos.color = Color.yellow;
 

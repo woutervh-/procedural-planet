@@ -16,7 +16,7 @@ public class LodManager : MonoBehaviour
         for (int i = 0; i < 6; i++)
         {
             this.rootGameObjects[i] = new GameObject("Face (" + i + ")");
-            this.rootGameObjects[i].transform.parent = this.transform;
+            this.rootGameObjects[i].transform.SetParent(this.transform, false);
 
             Vector3 up = LodManager.directions[i];
             LodProperties lodProperties = new LodProperties();
@@ -32,8 +32,20 @@ public class LodManager : MonoBehaviour
     {
         foreach (LodNode root in this.roots)
         {
+            if (Input.GetKeyDown(KeyCode.D))
+            {
+                root.PrintDiagnostics();
+            }
             root.SplitRecursive();
             root.MergeRecursive();
+        }
+    }
+
+    void OnDestroy()
+    {
+        foreach (LodNode root in this.roots)
+        {
+            root.Dispose();
         }
     }
 }

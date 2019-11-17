@@ -27,6 +27,13 @@ public class LodFace
         return Vector3.Cross(up, LodFace.GetForward(up));
     }
 
+    public static float GetEdgeLengthSqr(int resolution, Vector3 forward, Vector3 right)
+    {
+        float percent = 1f / (resolution - 1);
+        float edgeLengthSqr = Mathf.Max(forward.sqrMagnitude, right.sqrMagnitude) * percent * 2f;
+        return edgeLengthSqr;
+    }
+
     public Mesh GenerateMesh()
     {
         Mesh mesh = new Mesh();

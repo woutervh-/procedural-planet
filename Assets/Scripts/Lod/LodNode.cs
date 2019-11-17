@@ -6,6 +6,7 @@ public class LodNode : IDisposable
     private const int MAX_LOD_LEVEL = 10;
     private const int CHUNK_RESOLUTION = 16;
     private const float DETAIL_FACTOR = 512f;
+    private const float DESIRED_EDGE_LENGTH = 6f;
 
     private LodNode parent;
     private LodProperties lodProperties;
@@ -30,12 +31,13 @@ public class LodNode : IDisposable
 
         this.children = null;
         this.gameObject = new GameObject("Chunk " + lodLevel);
+        this.gameObject.transform.SetParent(lodProperties.gameObject.transform, false);
+
         this.meshFilter = this.gameObject.AddComponent<MeshFilter>();
         this.meshRenderer = this.gameObject.AddComponent<MeshRenderer>();
         this.plane = new LodFace(LodNode.CHUNK_RESOLUTION, origin, lodProperties.up, forward, right).GenerateMesh();
 
         this.meshRenderer.sharedMaterial = lodProperties.material;
-        this.meshFilter.transform.SetParent(lodProperties.gameObject.transform, false);
         this.meshFilter.mesh = this.plane;
     }
 
@@ -113,6 +115,33 @@ public class LodNode : IDisposable
         }
         this.meshRenderer.enabled = true;
         this.children = null;
+    }
+
+    public void PrintDiagnostics()
+    {
+        Vector3[] corners = new Vector3[8];
+        corners[0] = new Vector3(this.meshRenderer.bounds.min.x, this.meshRenderer.bounds.min.y, this.meshRenderer.bounds.min.z);
+        corners[1] = new Vector3(this.meshRenderer.bounds.min.x, this.meshRenderer.bounds.min.y, this.meshRenderer.bounds.max.z);
+        corners[2] = new Vector3(this.meshRenderer.bounds.min.x, this.meshRenderer.bounds.max.y, this.meshRenderer.bounds.min.z);
+        corners[3] = new Vector3(this.meshRenderer.bounds.min.x, this.meshRenderer.bounds.max.y, this.meshRenderer.bounds.max.z);
+        corners[4] = new Vector3(this.meshRenderer.bounds.max.x, this.meshRenderer.bounds.min.y, this.meshRenderer.bounds.min.z);
+        corners[5] = new Vector3(this.meshRenderer.bounds.max.x, this.meshRenderer.bounds.min.y, this.meshRenderer.bounds.max.z);
+        corners[6] = new Vector3(this.meshRenderer.bounds.max.x, this.meshRenderer.bounds.max.y, this.meshRenderer.bounds.min.z);
+        corners[7] = new Vector3(this.meshRenderer.bounds.max.x, this.meshRenderer.bounds.max.y, this.meshRenderer.bounds.max.z);
+        Vector3 min = new Vector3(Mathf.Infinity, Mathf.Infinity, Mathf.Infinity);
+        Vector3 max = new Vector3(Mathf.NegativeInfinity, Mathf.NegativeInfinity, Mathf.NegativeInfinity);
+        for (int i = 0; i < 8; i++)
+        {
+            Vector3 position = Camera.main.WorldToScreenPoint(corners[i]);
+            min = Vector3.Min(min, position);
+            max = Vector3.Max(max, position);
+        }
+        float width = max.x - min.x;
+        float height = max.y - min.y;
+        float size = Mathf.Max(width, height);
+        float factor = size / LodNode.CHUNK_RESOLUTION / LodNode.DESIRED_EDGE_LENGTH;
+        float lodLevel = Mathf.Log(factor, 2f);
+        Debug.Log("(Width x Height): " + width + " x " + height + "; (LOD level): " + lodLevel + ";");
     }
 
     public bool ShouldSplit()
