@@ -53,7 +53,7 @@ public class LodFace
 
                 float height = this.heightGenerator.GetHeight(pointOnUnitSphere);
                 vertices[vertexIndex] = pointOnUnitSphere * height;
-                normals[vertexIndex] = pointOnUnitSphere;
+                normals[vertexIndex] = this.heightGenerator.GetNormal(pointOnUnitSphere, pointOnUnitSphere);
 
                 if (x != resolution - 1 && y != resolution - 1)
                 {

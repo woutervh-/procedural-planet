@@ -63,6 +63,52 @@ public class Perlin
         return this.gradients;
     }
 
+    public Vector3 GetDerivative(float x, float y, float z)
+    {
+        int ix = Perlin.FlooredRemainder(Mathf.FloorToInt(x), Perlin.SIZE);
+        int iy = Perlin.FlooredRemainder(Mathf.FloorToInt(y), Perlin.SIZE);
+        int iz = Perlin.FlooredRemainder(Mathf.FloorToInt(z), Perlin.SIZE);
+        float fx = x - Mathf.FloorToInt(x);
+        float fy = y - Mathf.FloorToInt(y);
+        float fz = z - Mathf.FloorToInt(z);
+        float u = Perlin.Fade(fx);
+        float v = Perlin.Fade(fy);
+        float w = Perlin.Fade(fz);
+        float du = Perlin.FadeDerivative(fx);
+        float dv = Perlin.FadeDerivative(fy);
+        float dw = Perlin.FadeDerivative(fz);
+
+        int aa = (int)this.hashes[ix + iy * Perlin.SIZE].x + iz;
+        int ab = (int)this.hashes[ix + iy * Perlin.SIZE].y + iz;
+        int ba = (int)this.hashes[ix + iy * Perlin.SIZE].z + iz;
+        int bb = (int)this.hashes[ix + iy * Perlin.SIZE].w + iz;
+
+        Vector3 p = new Vector3(fx, fy, fz);
+        float a = Vector3.Dot(this.gradients[aa], p + directionLookup[0]);
+        float b = Vector3.Dot(this.gradients[ba], p + directionLookup[1]);
+        float c = Vector3.Dot(this.gradients[ab], p + directionLookup[2]);
+        float d = Vector3.Dot(this.gradients[bb], p + directionLookup[3]);
+        float e = Vector3.Dot(this.gradients[aa + 1], p + directionLookup[4]);
+        float f = Vector3.Dot(this.gradients[ba + 1], p + directionLookup[5]);
+        float g = Vector3.Dot(this.gradients[ab + 1], p + directionLookup[6]);
+        float h = Vector3.Dot(this.gradients[bb + 1], p + directionLookup[7]);
+
+        float k0 = a;
+        float k1 = (b - a);
+        float k2 = (c - a);
+        float k3 = (e - a);
+        float k4 = (a + d - b - c);
+        float k5 = (a + f - b - e);
+        float k6 = (a + g - c - e);
+        float k7 = (b + c + e + h - a - d - f - g);
+
+        return new Vector3(
+            du * (k1 + k4 * v + k5 * w + k7 * v * w),
+            dv * (k2 + k4 * u + k6 * w + k7 * v * w),
+            dw * (k3 + k5 * u + k6 * v + k7 * v * w)
+        );
+    }
+
     public float GetValue(float x, float y, float z)
     {
         int ix = Perlin.FlooredRemainder(Mathf.FloorToInt(x), Perlin.SIZE);
@@ -81,30 +127,25 @@ public class Perlin
         int bb = (int)this.hashes[ix + iy * Perlin.SIZE].w + iz;
 
         Vector3 p = new Vector3(fx, fy, fz);
-        float x1, x2, y1, y2;
-        x1 = Mathf.Lerp(
-            Vector3.Dot(this.gradients[aa], p + directionLookup[0]),
-            Vector3.Dot(this.gradients[ba], p + directionLookup[1]),
-            u
-        );
-        x2 = Mathf.Lerp(
-            Vector3.Dot(this.gradients[ab], p + directionLookup[2]),
-            Vector3.Dot(this.gradients[bb], p + directionLookup[3]),
-            u
-        );
-        y1 = Mathf.Lerp(x1, x2, v);
-        x1 = Mathf.Lerp(
-            Vector3.Dot(this.gradients[aa + 1], p + directionLookup[4]),
-            Vector3.Dot(this.gradients[ba + 1], p + directionLookup[5]),
-            u
-        );
-        x2 = Mathf.Lerp(
-            Vector3.Dot(this.gradients[ab + 1], p + directionLookup[6]),
-            Vector3.Dot(this.gradients[bb + 1], p + directionLookup[7]),
-            u
-        );
-        y2 = Mathf.Lerp(x1, x2, v);
-        return (Mathf.Lerp(y1, y2, w) + 1f) / 2f;
+        float a = Vector3.Dot(this.gradients[aa], p + directionLookup[0]);
+        float b = Vector3.Dot(this.gradients[ba], p + directionLookup[1]);
+        float c = Vector3.Dot(this.gradients[ab], p + directionLookup[2]);
+        float d = Vector3.Dot(this.gradients[bb], p + directionLookup[3]);
+        float e = Vector3.Dot(this.gradients[aa + 1], p + directionLookup[4]);
+        float f = Vector3.Dot(this.gradients[ba + 1], p + directionLookup[5]);
+        float g = Vector3.Dot(this.gradients[ab + 1], p + directionLookup[6]);
+        float h = Vector3.Dot(this.gradients[bb + 1], p + directionLookup[7]);
+
+        float k0 = a;
+        float k1 = (b - a);
+        float k2 = (c - a);
+        float k3 = (e - a);
+        float k4 = (a + d - b - c);
+        float k5 = (a + f - b - e);
+        float k6 = (a + g - c - e);
+        float k7 = (b + c + e + h - a - d - f - g);
+
+        return k0 + k1 * u + k2 * v + k3 * w + k4 * u * v + k5 * u * w + k6 * v * w + k7 * u * v * w;
     }
 
     private static int FlooredRemainder(int a, int n)
@@ -121,7 +162,12 @@ public class Perlin
 
     private static float Fade(float t)
     {
-        return t * t * t * (t * (t * 6 - 15) + 10);
+        return t * t * t * (t * (t * 6f - 15f) + 10f);
+    }
+
+    private static float FadeDerivative(float t)
+    {
+        return 30.0f * t * t * (1.0f + t * (t - 2.0f));
     }
 
     private static Vector3[] gradientLookup = new Vector3[] {
