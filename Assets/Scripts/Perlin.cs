@@ -150,14 +150,14 @@ public class Perlin
         return this.gradients;
     }
 
-    public PerlinSample Sample(float x, float y, float z)
+    public PerlinSample Sample(Vector3 position)
     {
-        int ix = Perlin.FlooredRemainder(Mathf.FloorToInt(x), Perlin.SIZE);
-        int iy = Perlin.FlooredRemainder(Mathf.FloorToInt(y), Perlin.SIZE);
-        int iz = Perlin.FlooredRemainder(Mathf.FloorToInt(z), Perlin.SIZE);
-        float fx = x - Mathf.FloorToInt(x);
-        float fy = y - Mathf.FloorToInt(y);
-        float fz = z - Mathf.FloorToInt(z);
+        int ix = Perlin.FlooredRemainder(Mathf.FloorToInt(position.x), Perlin.SIZE);
+        int iy = Perlin.FlooredRemainder(Mathf.FloorToInt(position.y), Perlin.SIZE);
+        int iz = Perlin.FlooredRemainder(Mathf.FloorToInt(position.z), Perlin.SIZE);
+        float fx = position.x - Mathf.FloorToInt(position.x);
+        float fy = position.y - Mathf.FloorToInt(position.y);
+        float fz = position.z - Mathf.FloorToInt(position.z);
         float u = Perlin.Fade(fx);
         float v = Perlin.Fade(fy);
         float w = Perlin.Fade(fz);
