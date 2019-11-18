@@ -181,20 +181,20 @@ public class Perlin
         float h = Vector3.Dot(this.gradients[bb + 1], p + directionLookup[7]);
 
         float k0 = a;
-        float k1 = (b - a);
-        float k2 = (c - a);
-        float k3 = (e - a);
-        float k4 = (a + d - b - c);
-        float k5 = (a + f - b - e);
-        float k6 = (a + g - c - e);
-        float k7 = (b + c + e + h - a - d - f - g);
+        float k1 = b - a;
+        float k2 = c - a;
+        float k3 = e - a;
+        float k4 = d - c - b + a;
+        float k5 = f - e - b + a;
+        float k6 = g - e - c + a;
+        float k7 = h - g - f + e - d + c + b - a;
 
         PerlinSample sample = new PerlinSample();
-        sample.value = k0 + k1 * u + k2 * v + k3 * w + k4 * u * v + k5 * u * w + k6 * v * w + k7 * u * v * w;
+        sample.value = k0 + k1 * u + (k2 + k4 * u) * v + (k3 + k5 * u + (k6 + k7 * u) * v) * w;
         sample.derivative = new Vector3(
-            du * (k1 + k4 * v + k5 * w + k7 * v * w),
-            dv * (k2 + k4 * u + k6 * w + k7 * v * w),
-            dw * (k3 + k5 * u + k6 * v + k7 * v * w)
+            du * (k1 + k4 * v + (k5 + k7 * v) * w),
+            dv * (k2 + k4 * u + (k6 + k7 * u) * w),
+            dw * (k3 + k5 * u + (k6 + k7 * u) * v)
         );
 
         return sample;
@@ -219,7 +219,7 @@ public class Perlin
 
     private static float FadeDerivative(float t)
     {
-        return 30.0f * t * t * (1.0f + t * (t - 2.0f));
+        return 30.0f * t * t * (t * (t - 2.0f) + 1.0f);
     }
 
     private static Vector3[] gradientLookup = new Vector3[] {
