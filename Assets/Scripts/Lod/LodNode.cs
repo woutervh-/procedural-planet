@@ -48,19 +48,22 @@ public class LodNode : IDisposable
         UnityEngine.Object.Destroy(this.gameObject);
     }
 
-    public void SplitRecursive()
+    public void ManageRecursive()
     {
-        if (!this.ShouldSplit())
+        if (this.ShouldSplit())
         {
-            return;
-        }
-        this.Split();
-        if (this.children != null)
-        {
-            foreach (LodNode child in this.children)
+            this.Split();
+            if (this.children != null)
             {
-                child.SplitRecursive();
+                foreach (LodNode child in this.children)
+                {
+                    child.ManageRecursive();
+                }
             }
+        }
+        else
+        {
+            this.MergeRecursive();
         }
     }
 
@@ -73,7 +76,7 @@ public class LodNode : IDisposable
                 child.MergeRecursive();
             }
         }
-        if (this.ShouldMerge())
+        if (!this.ShouldSplit())
         {
             this.Merge();
         }
@@ -117,58 +120,11 @@ public class LodNode : IDisposable
         this.children = null;
     }
 
-    private int DesiredLodLevel()
+    private bool ShouldSplit()
     {
-        // TODO: bias edge length based on maximum offset (if height gain is super large, triangles get super large, but it doesn't change this routine)
-        float edgeLength = LodFace.GetEdgeLength(LodNode.CHUNK_RESOLUTION);
-        Vector3 scales = this.gameObject.transform.TransformVector(this.gameObject.transform.InverseTransformDirection(Vector3.one));
-        float maxScale = Mathf.Max(scales.x, scales.y, scales.z);
-        float scaledEdgeLength = maxScale * edgeLength;
-        float cameraDistance = Mathf.Sqrt(this.meshRenderer.bounds.SqrDistance(Camera.main.transform.position));
-        if (cameraDistance == 0f)
-        {
-            return int.MaxValue;
-        }
-        Vector3 boundsPoint = Camera.main.WorldToScreenPoint(Camera.main.transform.position + Camera.main.transform.forward * cameraDistance);
-        Vector3 offsetPoint = Camera.main.WorldToScreenPoint(Camera.main.transform.position + Camera.main.transform.forward * cameraDistance + Camera.main.transform.up * edgeLength);
-        float unitVectorLength = offsetPoint.y - boundsPoint.y;
-        float edgeLengthAtDistance = unitVectorLength * scaledEdgeLength;
-        float tessellationFactor = edgeLengthAtDistance / LodNode.DESIRED_EDGE_LENGTH;
-        int lodLevel = (int)Mathf.Log(tessellationFactor, 2f);
-        return lodLevel;
-    }
-
-    public bool ShouldSplit()
-    {
-        return this.DesiredLodLevel() > this.lodLevel;
-    }
-
-    public bool ShouldMerge()
-    {
-        return this.DesiredLodLevel() <= this.lodLevel;
-    }
-
-    private static float LodLevelToMinDistance(int lodLevel)
-    {
-        if (lodLevel == LodNode.MAX_LOD_LEVEL)
-        {
-            return 0f;
-        }
-        else
-        {
-            return Mathf.Pow(2f, LodNode.MAX_LOD_LEVEL - lodLevel) / LodNode.DETAIL_FACTOR;
-        }
-    }
-
-    private static float LodLevelToMaxDistance(int lodLevel)
-    {
-        if (lodLevel == 0)
-        {
-            return Mathf.Infinity;
-        }
-        else
-        {
-            return Mathf.Pow(2f, LodNode.MAX_LOD_LEVEL - lodLevel + 1) / LodNode.DETAIL_FACTOR;
-        }
+        float maxGeoError = Mathf.Pow(2f, LodNode.MAX_LOD_LEVEL - this.lodLevel);
+        float K = Screen.width / (2f * Mathf.Tan((65f / 2f) * Mathf.Deg2Rad));
+        float maxVerError = (maxGeoError / Mathf.Sqrt(this.meshRenderer.bounds.SqrDistance(Camera.main.transform.position))) * K;
+        return maxVerError > 24f;
     }
 }

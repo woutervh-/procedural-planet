@@ -12,7 +12,11 @@ public class LodManager : MonoBehaviour
 
     void Start()
     {
-        this.heightGenerator = new LodHeightGenerator(new Perlin(0));
+        Perlin perlin = new Perlin(0);
+        this.heightGenerator = new LodHeightGenerator(perlin);
+        this.material.SetTexture("_Gradients2D", PerlinTextureGenerator.CreateGradientsTexture(perlin));
+        this.material.SetTexture("_Permutation2D", PerlinTextureGenerator.CreatePermutationTexture(perlin));
+
         this.rootGameObjects = new GameObject[6];
         this.roots = new LodNode[6];
         for (int i = 0; i < 6; i++)
@@ -35,8 +39,7 @@ public class LodManager : MonoBehaviour
     {
         foreach (LodNode root in this.roots)
         {
-            root.SplitRecursive();
-            root.MergeRecursive();
+            root.ManageRecursive();
         }
     }
 
