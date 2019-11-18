@@ -11,7 +11,7 @@ public class LodHeightGenerator
 
     public Perlin.PerlinSample GetSample(Vector3 position)
     {
-        return this.perlin.Sample(position.x, position.y, position.z) / 2f;
+        return this.perlin.Sample(position.x, position.y, position.z) / 2f + 1.5f;
     }
 
     public static Vector3 GetAdjustedNormal(Vector3 normal, Vector3 derivative)
