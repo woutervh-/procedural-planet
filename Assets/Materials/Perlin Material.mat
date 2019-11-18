@@ -7,7 +7,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Material
+  m_Name: Perlin Material
   m_Shader: {fileID: 4800000, guid: c0f75d83c9c469c4f98be3e0299e9bfb, type: 3}
   m_ShaderKeywords: 
   m_LightmapFlags: 4
