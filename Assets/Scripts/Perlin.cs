@@ -165,37 +165,54 @@ public class Perlin
         float dv = Perlin.FadeDerivative(fy);
         float dw = Perlin.FadeDerivative(fz);
 
-        int aa = (int)this.hashes[ix + iy * Perlin.SIZE].x + iz;
-        int ab = (int)this.hashes[ix + iy * Perlin.SIZE].y + iz;
-        int ba = (int)this.hashes[ix + iy * Perlin.SIZE].z + iz;
-        int bb = (int)this.hashes[ix + iy * Perlin.SIZE].w + iz;
+        int aa = this.hashes[ix + iy * Perlin.SIZE].x + iz;
+        int ab = this.hashes[ix + iy * Perlin.SIZE].y + iz;
+        int ba = this.hashes[ix + iy * Perlin.SIZE].z + iz;
+        int bb = this.hashes[ix + iy * Perlin.SIZE].w + iz;
+
+        Vector3 g000 = this.gradients[aa];
+        Vector3 g100 = this.gradients[ba];
+        Vector3 g010 = this.gradients[ab];
+        Vector3 g110 = this.gradients[bb];
+        Vector3 g001 = this.gradients[aa + 1];
+        Vector3 g101 = this.gradients[ba + 1];
+        Vector3 g011 = this.gradients[ab + 1];
+        Vector3 g111 = this.gradients[bb + 1];
 
         Vector3 p = new Vector3(fx, fy, fz);
-        float a = Vector3.Dot(this.gradients[aa], p + directionLookup[0]);
-        float b = Vector3.Dot(this.gradients[ba], p + directionLookup[1]);
-        float c = Vector3.Dot(this.gradients[ab], p + directionLookup[2]);
-        float d = Vector3.Dot(this.gradients[bb], p + directionLookup[3]);
-        float e = Vector3.Dot(this.gradients[aa + 1], p + directionLookup[4]);
-        float f = Vector3.Dot(this.gradients[ba + 1], p + directionLookup[5]);
-        float g = Vector3.Dot(this.gradients[ab + 1], p + directionLookup[6]);
-        float h = Vector3.Dot(this.gradients[bb + 1], p + directionLookup[7]);
+        float v000 = Vector3.Dot(g000, p + directionLookup[0]);
+        float v100 = Vector3.Dot(g100, p + directionLookup[1]);
+        float v010 = Vector3.Dot(g010, p + directionLookup[2]);
+        float v110 = Vector3.Dot(g110, p + directionLookup[3]);
+        float v001 = Vector3.Dot(g001, p + directionLookup[4]);
+        float v101 = Vector3.Dot(g101, p + directionLookup[5]);
+        float v011 = Vector3.Dot(g011, p + directionLookup[6]);
+        float v111 = Vector3.Dot(g111, p + directionLookup[7]);
 
-        float k0 = a;
-        float k1 = b - a;
-        float k2 = c - a;
-        float k3 = e - a;
-        float k4 = d - c - b + a;
-        float k5 = f - e - b + a;
-        float k6 = g - e - c + a;
-        float k7 = h - g - f + e - d + c + b - a;
+        float a = v000;
+        float b = v100 - v000;
+        float c = v010 - v000;
+        float d = v001 - v000;
+        float e = v110 - v010 - v100 + v000;
+        float f = v101 - v001 - v100 + v000;
+        float g = v011 - v001 - v010 + v000;
+        float h = v111 - v011 - v101 + v001 - v110 + v010 + v100 - v000;
+
+        Vector3 da = g000;
+        Vector3 db = g100 - g000;
+        Vector3 dc = g010 - g000;
+        Vector3 dd = g001 - g000;
+        Vector3 de = g110 - g010 - g100 + g000;
+        Vector3 df = g101 - g001 - g100 + g000;
+        Vector3 dg = g011 - g001 - g010 + g000;
+        Vector3 dh = g111 - g011 - g101 + g001 - g110 + g010 + g100 - g000;
 
         PerlinSample sample = new PerlinSample();
-        sample.value = k0 + k1 * u + (k2 + k4 * u) * v + (k3 + k5 * u + (k6 + k7 * u) * v) * w;
-        sample.derivative = new Vector3(
-            du * (k1 + k4 * v + (k5 + k7 * v) * w),
-            dv * (k2 + k4 * u + (k6 + k7 * u) * w),
-            dw * (k3 + k5 * u + (k6 + k7 * u) * v)
-        );
+        sample.value = a + b * u + (c + e * u) * v + (d + f * u + (g + h * u) * v) * w;
+        sample.derivative = da + db * u + (dc + de * u) * v + (dd + df * u + (dg + dh * u) * v) * w;
+        sample.derivative.x += du * (b + e * v + (f + h * v) * w);
+        sample.derivative.y += dv * (c + e * u + (g + h * u) * w);
+        sample.derivative.z += dw * (d + f * u + (g + h * u) * v);
 
         return sample;
     }

@@ -119,6 +119,7 @@ public class LodNode : IDisposable
 
     private int DesiredLodLevel()
     {
+        // TODO: bias edge length based on maximum offset (if height gain is super large, triangles get super large, but it doesn't change this routine)
         float edgeLength = LodFace.GetEdgeLength(LodNode.CHUNK_RESOLUTION);
         Vector3 scales = this.gameObject.transform.TransformVector(this.gameObject.transform.InverseTransformDirection(Vector3.one));
         float maxScale = Mathf.Max(scales.x, scales.y, scales.z);
