@@ -28,7 +28,12 @@ Shader "Custom/LOD Shader"
         };
 
         struct Input {
+<<<<<<< HEAD
             float4 vertex;
+=======
+            float3 position;
+            float4 tangent;
+>>>>>>> 1f2b9244962db90be21d0ea67e07a39ca8c886a7
             INTERNAL_DATA
         };
 
@@ -125,19 +130,24 @@ Shader "Custom/LOD Shader"
 
         void VertexProgram (inout VertexData v, out Input o) {
             UNITY_INITIALIZE_OUTPUT(Input, o);
-            o.vertex = v.vertex;
+            o.tangent = v.tangent;
+            o.position = UnityObjectToWorldNormal(normalize(v.vertex));
+
+            float height = myNoise(o.position).w;
+            // v.vertex = float4(height * o.position, 1);
         }
 
         void SurfaceProgram (Input IN, inout SurfaceOutputStandard o) {
-            float3 worldNormal = WorldNormalVector(IN, o.Normal);
+            float3 unitSphere = normalize(IN.position);
+            float3 gradient = myNoise(unitSphere).xyz;
+            float3 normal = normalize(unitSphere - gradient);
+            float3 binormal = cross(unitSphere, IN.tangent.xyz) * (IN.tangent.w * unity_WorldTransformParams.w);
+            float3 worldNormal = (IN.tangent.xyz * normal.x) + (binormal * normal.y) + (normal * normal.z);
 
-            float3 unitSpherePosition = normalize(IN.vertex.xyz);
-            float3 gradient = myNoise(unitSpherePosition);
-            float3 normal = normalize(unitSpherePosition - gradient);
+            // float3 worldNormal = WorldNormalVector(IN, o.Normal);
 
             o.Albedo = _ColorTint;
-            o.Albedo = float4(unitSpherePosition, 1);
-            o.Normal = unitSpherePosition;
+            o.Normal = worldNormal;
             o.Smoothness = _Smoothness;
             o.Metallic = _Metallic;
         }
