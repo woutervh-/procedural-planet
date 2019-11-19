@@ -1,5 +1,3 @@
-// Upgrade NOTE: replaced '_Object2World' with 'unity_ObjectToWorld'
-
 Shader "Custom/LOD Shader"
 {
     Properties
@@ -18,6 +16,7 @@ Shader "Custom/LOD Shader"
         CGPROGRAM
 
         #pragma surface SurfaceProgram Standard addshadow fullforwardshadows vertex:VertexProgram nolightmap
+        #pragma target 3.0
 
         #include "UnityCG.cginc"
 
@@ -29,8 +28,8 @@ Shader "Custom/LOD Shader"
         };
 
         struct Input {
-            float3 position;
-            // float4 tangent;
+            float3 Pos;
+            float4 Tangent;
         };
 
         sampler2D _Gradients2D;
@@ -125,32 +124,43 @@ Shader "Custom/LOD Shader"
 
         void VertexProgram (inout VertexData v, out Input o) {
             UNITY_INITIALIZE_OUTPUT(Input, o);
-            // o.tangent = v.tangent;
-            o.position = normalize(v.vertex);
+            v.normal = normalize(mul(unity_ObjectToWorld, v.vertex));
+            o.Pos = normalize(mul(unity_ObjectToWorld, v.vertex)).xyz;
+            o.Tangent = v.tangent;
+        }
 
-            float height = myNoise(o.position).w;
-            v.vertex = float4(height * o.position, 1);
+        float3 GetNormal(float3 N, float3 P) {
+            float3 gradient = myNoise(P).xyz;
+
+            float e = 1;
+            int o = 8;
+            float F = myNoise(float3(P.x, P.y, P.z)).w;
+            float Fx = myNoise(float3(P.x + e, P.y, P.z)).w;
+            float Fy = myNoise(float3(P.x, P.y + e, P.z)).w;
+            float Fz = myNoise(float3(P.x, P.y, P.z + e)).w;
+
+            float3 dF = float3((Fx - F) / e, (Fy - F) / e, (Fz - F) / e);
+
+            return normalize(N - gradient);
+            // return normalize(N - dF);
         }
 
         void SurfaceProgram (Input IN, inout SurfaceOutputStandard o) {
-            float3 unitSphere = normalize(IN.position);
-            float3 gradient = myNoise(unitSphere).xyz;
-            float3 normal = normalize(unitSphere - gradient);
-            float3 worldNormal = UnityObjectToWorldNormal(normal);
-            // float3 worldNormal = mul(unity_ObjectToWorld, float4(normal, 0.0)).xyz;
-            
-            // float3 binormal = cross(unitSphere, IN.tangent.xyz) * (IN.tangent.w * unity_WorldTransformParams.w);
-            // float3 worldNormal = (IN.tangent.xyz * normal.x) + (binormal * normal.y) + (normal * normal.z);
-            // float3 worldNormal = WorldNormalVector(IN, o.Normal);
+            float3 n = GetNormal(normalize(o.Normal), IN.Pos);
+            float3 binormal = cross(normalize(o.Normal), IN.Tangent) * (IN.Tangent.w * unity_WorldTransformParams.w);
+            float3 normalW = (IN.Tangent * n.x) + (binormal * n.y) + (n * n.z);
+            o.Normal = UnityObjectToWorldNormal(normalW);
 
             o.Albedo = _ColorTint;
             // o.Albedo = float4(normal, 1);
             // o.Emission = float4(normal, 1);
-            o.Normal = normal;
+            // o.Normal = normal;
             o.Smoothness = _Smoothness;
             o.Metallic = _Metallic;
         }
 
         ENDCG
     }
+
+    Fallback "Diffuse"
 }
