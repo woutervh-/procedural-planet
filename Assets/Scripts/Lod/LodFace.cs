@@ -54,7 +54,6 @@ public class LodFace
                 Perlin.PerlinSample sample = this.heightGenerator.GetSample(pointOnUnitSphere);
                 vertices[vertexIndex] = pointOnUnitSphere * sample.value;
                 normals[vertexIndex] = LodHeightGenerator.GetAdjustedNormal(pointOnUnitSphere, sample.derivative);
-                normals[vertexIndex] = pointOnUnitSphere;
 
                 if (x != resolution - 1 && y != resolution - 1)
                 {

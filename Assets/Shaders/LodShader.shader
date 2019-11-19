@@ -48,7 +48,7 @@ Shader "Custom/LOD Shader"
         }
 
         float3 gradient(float t) {
-            return tex2Dlod(_Gradients2D, float4(t, 0, 0, 0)).rgb * 2.0 - 1.0;
+            return tex2Dlod(_Gradients2D, float4(t, 0, 0, 0)).xyz * 2.0 - 1.0;
         }
 
         float4 perlin(float3 p) {
@@ -56,12 +56,11 @@ Shader "Custom/LOD Shader"
             float3 fp = p - floor(p);
             float3 u = fade(fp);
             float3 du = fadeDerivative(fp);
-
             float4 permutation = tex2Dlod(_Permutation2D, float4(ip.xy, 0, 0));
-            float aa = permutation.r + ip.z;
-            float ab = permutation.g + ip.z;
-            float ba = permutation.b + ip.z;
-            float bb = permutation.a + ip.z;
+            float aa = permutation.x + ip.z;
+            float ab = permutation.y + ip.z;
+            float ba = permutation.z + ip.z;
+            float bb = permutation.w + ip.z;
 
             float3 g000 = gradient(aa);
             float3 g100 = gradient(ba);
@@ -109,17 +108,17 @@ Shader "Custom/LOD Shader"
         }
 
         float4 noise(float3 p, float frequency) {
-            float4 noise = perlin(p * frequency);
-            noise.xyz *= frequency;
-            return noise;
+            float4 perlinSample = perlin(p * frequency);
+            perlinSample.xyz *= frequency;
+            return perlinSample;
         }
 
         float4 myNoise(float3 p) {
             float4 sum = float4(0, 0, 0, 0);
-            sum += noise(p, 1);
+            sum += noise(p, 1.0);
             // sum += noise(p, 2) / 2;
             // sum += noise(p, 4) / 4;
-            sum /= 2;
+            sum /= 2.0;
             sum.w += 1.5;
             return sum;
         }
@@ -130,7 +129,7 @@ Shader "Custom/LOD Shader"
             o.position = UnityObjectToWorldNormal(normalize(v.vertex));
 
             float height = myNoise(o.position).w;
-            // v.vertex = float4(height * o.position, 1);
+            v.vertex = float4(height * o.position, 1);
         }
 
         void SurfaceProgram (Input IN, inout SurfaceOutputStandard o) {
@@ -138,9 +137,9 @@ Shader "Custom/LOD Shader"
             float3 gradient = myNoise(unitSphere).xyz;
             float3 normal = normalize(unitSphere - gradient);
             float3 binormal = cross(unitSphere, IN.tangent.xyz) * (IN.tangent.w * unity_WorldTransformParams.w);
-            float3 worldNormal = (IN.tangent.xyz * normal.x) + (binormal * normal.y) + (normal * normal.z);
+            // float3 worldNormal = (IN.tangent.xyz * normal.x) + (binormal * normal.y) + (normal * normal.z);
 
-            // float3 worldNormal = WorldNormalVector(IN, o.Normal);
+            float3 worldNormal = WorldNormalVector(IN, o.Normal);
 
             o.Albedo = _ColorTint;
             o.Normal = worldNormal;

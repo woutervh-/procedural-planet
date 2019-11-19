@@ -130,8 +130,7 @@ public class Perlin
         this.gradients = new Vector3[Perlin.SIZE * 2];
         for (int i = 0; i < Perlin.SIZE; i++)
         {
-            this.gradients[i] = Perlin.gradientLookup[this.permutation[i] % 12];
-            this.gradients[i + Perlin.SIZE] = Perlin.gradientLookup[this.permutation[i] % 12];
+            this.gradients[i + Perlin.SIZE] = this.gradients[i] = Perlin.gradientLookup[this.permutation[i] % 12];
         }
     }
 
