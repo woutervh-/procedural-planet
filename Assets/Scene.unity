@@ -324,7 +324,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1112421329}
   - component: {fileID: 1112421330}
-  - component: {fileID: 1112421331}
   m_Layer: 0
   m_Name: Lods
   m_TagString: Untagged
@@ -359,17 +358,3 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   material: {fileID: 2100000, guid: fb5d7be72819b5d459a6a7258791bed6, type: 2}
---- !u!114 &1112421331
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1112421328}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0be84a4d8764a92409b0d9c10dc61d03, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  offset: 0.01
-  scale: 200
