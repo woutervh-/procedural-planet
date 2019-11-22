@@ -28,7 +28,7 @@ Shader "Custom/LOD Shader"
         };
 
         struct Input {
-            float3 WorldPos;
+            float3 Pos;
             float3 Normal;
             float4 Tangent;
             INTERNAL_DATA
@@ -126,40 +126,19 @@ Shader "Custom/LOD Shader"
 
         void VertexProgram (inout VertexData v, out Input o) {
             UNITY_INITIALIZE_OUTPUT(Input, o);
+            o.Pos = normalize(v.vertex.xyz);
             o.Normal = UnityObjectToWorldNormal(v.normal);
-            o.WorldPos = normalize(mul(unity_ObjectToWorld, v.vertex));
             o.Tangent = float4(UnityObjectToWorldDir(v.tangent.xyz), v.tangent.w);
-            // o.Tangent = v.tangent;
-            // v.normal = normalize(mul(unity_ObjectToWorld, v.vertex));
-        }
-
-        float3 GetNormal(float3 N, float3 P) {
-            float3 gradient = myNoise(P).xyz;
-
-            float e = 1;
-            float F = myNoise(float3(P.x, P.y, P.z)).w;
-            float Fx = myNoise(float3(P.x + e, P.y, P.z)).w;
-            float Fy = myNoise(float3(P.x, P.y + e, P.z)).w;
-            float Fz = myNoise(float3(P.x, P.y, P.z + e)).w;
-
-            float3 dF = float3((Fx - F) / e, (Fy - F) / e, (Fz - F) / e);
-
-            // return normalize(N - gradient);
-            return normalize(N - dF);
         }
 
         void SurfaceProgram (Input IN, inout SurfaceOutputStandard o) {
-            // float3 n = GetNormal(normalize(o.Normal), IN.Pos);
-            // float3 n = normalize(IN.Normal);
-            // float3 binormal = cross(normalize(o.Normal), IN.Tangent.xyz) * (IN.Tangent.w * unity_WorldTransformParams.w);
-            // float3 normalW = (IN.Tangent.xyz * n.x) + (binormal * n.y) + (n * n.z);
-            float3 worldInterpolatedNormalVector = WorldNormalVector(IN, float3( 0, 0, 1 ));
-            o.Normal = normalize(worldInterpolatedNormalVector);
+            float3 gradient = myNoise(o.Normal).xyz;
+            float3 adjustedNormal = normalize(o.Normal - gradient);
+            float3 binormal = cross(normalize(IN.Normal), IN.Tangent.xyz) * (IN.Tangent.w * unity_WorldTransformParams.w);
+            float3 normal = (IN.Tangent.xyz * adjustedNormal.x) + (binormal * adjustedNormal.y) + (adjustedNormal * adjustedNormal.z);
 
+            o.Normal = normal;
             o.Albedo = _ColorTint;
-            // o.Albedo = float4(normal, 1);
-            // o.Emission = float4(normal, 1);
-            // o.Normal = normal;
             o.Smoothness = _Smoothness;
             o.Metallic = _Metallic;
         }
