@@ -13,7 +13,7 @@ public class LodManager : MonoBehaviour
     void Start()
     {
         LodHeightGenerator.Properties properties = new LodHeightGenerator.Properties();
-        properties.strength = 0.125f;
+        properties.strength = 0.25f;
         properties.frequency = 1f;
         properties.lacunarity = 2f;
         properties.persistence = 0.5f;

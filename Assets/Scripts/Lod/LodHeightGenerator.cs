@@ -44,7 +44,14 @@ public class LodHeightGenerator
 
     public float GetMaximumValue()
     {
-        return (1f + 1f / 2f + 1f / 4f) / 2f + 1.5f;
+        float strength = this.properties.strength;
+        float range = strength;
+        for (int i = 1; i < this.properties.octaves; i++)
+        {
+            strength *= this.properties.persistence;
+            range += strength;
+        }
+        return range + 1f;
     }
 
     public static Vector3 GetAdjustedNormal(Vector3 normal, Vector3 derivative)

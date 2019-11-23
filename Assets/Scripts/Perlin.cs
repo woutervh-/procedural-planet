@@ -224,7 +224,7 @@ public class Perlin
         }
         else
         {
-            return n + a % n;
+            return (n + a % n) % n;
         }
     }
 

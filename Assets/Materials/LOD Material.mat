@@ -76,7 +76,7 @@ Material:
     - _Metallic: 0
     - _Mode: 0
     - _OcclusionStrength: 1
-    - _Octaves: 8
+    - _Octaves: 13
     - _Parallax: 0.02
     - _Persistence: 0.5
     - _Smoothness: 0
