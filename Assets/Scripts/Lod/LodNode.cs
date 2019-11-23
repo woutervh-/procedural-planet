@@ -125,6 +125,6 @@ public class LodNode : IDisposable
         float maxGeoError = Mathf.Pow(2f, LodNode.MAX_LOD_LEVEL - this.lodLevel);
         float K = Screen.width / (2f * Mathf.Tan((Camera.main.fieldOfView / 2f) * Mathf.Deg2Rad));
         float maxVerError = (maxGeoError / Mathf.Sqrt(this.meshRenderer.bounds.SqrDistance(Camera.main.transform.position))) * K;
-        return maxVerError > 64f;
+        return maxVerError > 32f;
     }
 }

@@ -12,10 +12,22 @@ public class LodManager : MonoBehaviour
 
     void Start()
     {
+        LodHeightGenerator.Properties properties = new LodHeightGenerator.Properties();
+        properties.strength = 0.125f;
+        properties.frequency = 1f;
+        properties.lacunarity = 2f;
+        properties.persistence = 0.5f;
+        properties.octaves = 8;
+
         Perlin perlin = new Perlin(0);
-        this.heightGenerator = new LodHeightGenerator(perlin);
+        this.heightGenerator = new LodHeightGenerator(perlin, properties);
         this.material.SetTexture("_Gradients2D", PerlinTextureGenerator.CreateGradientsTexture(perlin));
         this.material.SetTexture("_Permutation2D", PerlinTextureGenerator.CreatePermutationTexture(perlin));
+        this.material.SetFloat("_Strength", properties.strength);
+        this.material.SetFloat("_Frequency", properties.frequency);
+        this.material.SetFloat("_Lacunarity", properties.lacunarity);
+        this.material.SetFloat("_Persistence", properties.persistence);
+        this.material.SetInt("_Octaves", properties.octaves);
 
         this.rootGameObjects = new GameObject[6];
         this.roots = new LodNode[6];

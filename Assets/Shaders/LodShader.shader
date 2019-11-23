@@ -7,6 +7,11 @@ Shader "Custom/LOD Shader"
         _Smoothness ("Smoothness", Range(0, 1)) = 0
         _Metallic ("Metallic", Range(0, 1)) = 0
         _ColorTint ("Tint", Color) = (1.0, 1.0, 1.0, 1.0)
+        _Strength ("Strength", Float) = 1
+        _Frequency ("Frequency", Float) = 1
+        _Lacunarity ("Lacunarity", Float) = 2
+        _Persistence ("Persistence", Float) = 0.5
+        _Octaves ("Octaves", Int) = 8
     }
 
     SubShader
@@ -39,6 +44,11 @@ Shader "Custom/LOD Shader"
         float _Smoothness;
         float _Metallic;
         float4 _ColorTint;
+        float _Strength;
+        float _Frequency;
+        float _Lacunarity;
+        float _Persistence;
+        int _Octaves;
 
         float3 fade(float3 t) {
             return t * t * t * (t * (t * 6.0 - 15.0) + 10.0);
@@ -105,22 +115,22 @@ Shader "Custom/LOD Shader"
             dv.y += du.y * (c + e * u.x + (g + h * u.x) * u.z);
             dv.z += du.z * (d + f * u.x + (g + h * u.x) * u.y);
 
-            return float4(dv / 2, (v + 1) / 2);
+            return float4(dv, v);
         }
 
-        float4 noise(float3 p, float frequency) {
-            float4 perlinSample = perlin(p * frequency);
-            perlinSample.xyz *= frequency;
-            return perlinSample;
-        }
-
-        float4 myNoise(float3 p) {
-            float4 sum = float4(0, 0, 0, 0);
-            sum += noise(p, 1.0);
-            // sum += noise(p, 2) / 2;
-            // sum += noise(p, 4) / 4;
-            // sum *= 2.0;
-            // sum.w += 3;
+        float4 noiseSum(float3 p) {
+            float strength = _Strength;
+            float frequency = _Frequency;
+            float4 sum = perlin(p * frequency) * strength;
+            sum.xyz *= frequency;
+            for (int i=0; i<_Octaves; i++) {
+                strength *= _Persistence;
+                frequency *= _Lacunarity;
+                float4 value = perlin(p * frequency) * strength;
+                sum.xyz += value.xyz * frequency;
+                sum.w += value.w;
+            }
+            sum.w += 1.0;
             return sum;
         }
 
@@ -132,7 +142,7 @@ Shader "Custom/LOD Shader"
         }
 
         void SurfaceProgram (Input IN, inout SurfaceOutputStandard o) {
-            float3 gradient = myNoise(o.Normal).xyz;
+            float3 gradient = noiseSum(IN.Pos).xyz;
             float3 adjustedNormal = normalize(o.Normal - gradient);
             float3 binormal = cross(normalize(IN.Normal), IN.Tangent.xyz) * (IN.Tangent.w * unity_WorldTransformParams.w);
             float3 normal = (IN.Tangent.xyz * adjustedNormal.x) + (binormal * adjustedNormal.y) + (adjustedNormal * adjustedNormal.z);
