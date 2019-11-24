@@ -67,11 +67,10 @@ Shader "Custom/LOD Shader"
             }
             
             fixed4 FragmentProgram (Interpolators i): SV_Target {
-                float gradientBias = 0.5;
-                float3 gradient = noise(i.vertex).xyz;
+                float h = distance(i.worldPos, _WorldSpaceCameraPos);
+                float3 gradient = finiteDifferenceGradient(i.vertex, h / 320000).xyz;
                 float3 adjustedNormal = normalize(i.vertex - gradient);
-                float3 blendedNormal = adjustedNormal * gradientBias + i.normal * (1 - gradientBias);
-                float3 worldNormal = UnityObjectToWorldNormal(blendedNormal);
+                float3 worldNormal = UnityObjectToWorldNormal(adjustedNormal);
                 
                 half nl = max(0, dot(worldNormal, _WorldSpaceLightPos0.xyz));
                 fixed3 diffuse = nl * _LightColor0.rgb;

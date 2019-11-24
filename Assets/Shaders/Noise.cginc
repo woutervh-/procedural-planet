@@ -93,9 +93,8 @@ float4 noise(float3 p) {
     return sum;
 }
 
-float3 finiteDifferenceGradient(float3 p) {
+float3 finiteDifferenceGradient(float3 p, float h) {
     float f = noise(p).w;
-    float h = 1.0 / 128.0;
     float fx = noise(p + float3(h, 0, 0)).w;
     float fy = noise(p + float3(0, h, 0)).w;
     float fz = noise(p + float3(0, 0, h)).w;

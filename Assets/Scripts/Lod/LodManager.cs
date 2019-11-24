@@ -17,7 +17,7 @@ public class LodManager : MonoBehaviour
         properties.frequency = 1f;
         properties.lacunarity = 2f;
         properties.persistence = 0.5f;
-        properties.octaves = 8;
+        properties.octaves = 14;
 
         Perlin perlin = new Perlin(0);
         this.heightGenerator = new LodHeightGenerator(perlin, properties);
