@@ -72,18 +72,18 @@ Material:
     - _GlossMapScale: 1
     - _Glossiness: 0.5
     - _GlossyReflections: 1
-    - _Lacunarity: 2
+    - _Lacunarity: 2.3
     - _Metallic: 0
     - _Mode: 0
     - _OcclusionStrength: 1
-    - _Octaves: 14
+    - _Octaves: 11
     - _Parallax: 0.02
-    - _Persistence: 0.5
+    - _Persistence: 0.4
     - _Smoothness: 0
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 1
-    - _Strength: 0.25
+    - _Strength: 0.28
     - _TessellationEdgeLength: 15
     - _UVSec: 0
     - _ZWrite: 1

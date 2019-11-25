@@ -13,11 +13,11 @@ public class LodManager : MonoBehaviour
     void Start()
     {
         LodHeightGenerator.Properties properties = new LodHeightGenerator.Properties();
-        properties.strength = 0.25f;
+        properties.strength = 0.28f;
         properties.frequency = 1f;
-        properties.lacunarity = 2f;
-        properties.persistence = 0.5f;
-        properties.octaves = 14;
+        properties.lacunarity = 2.3f;
+        properties.persistence = 0.40f;
+        properties.octaves = 11;
 
         Perlin perlin = new Perlin(0);
         this.heightGenerator = new LodHeightGenerator(perlin, properties);

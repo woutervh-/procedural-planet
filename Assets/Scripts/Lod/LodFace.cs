@@ -52,6 +52,8 @@ public class LodFace
                 Vector3 pointOnUnitSphere = pointOnUnitCube.normalized;
 
                 Perlin.PerlinSample sample = this.heightGenerator.GetSample(pointOnUnitSphere);
+                // vertices[vertexIndex] = pointOnUnitSphere;
+                // normals[vertexIndex] = pointOnUnitSphere;
                 vertices[vertexIndex] = pointOnUnitSphere * sample.value;
                 normals[vertexIndex] = LodHeightGenerator.GetAdjustedNormal(pointOnUnitSphere, sample.derivative);
 

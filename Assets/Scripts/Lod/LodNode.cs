@@ -135,16 +135,16 @@ public class LodNode : IDisposable
         float unitVectorLength = offsetPoint.y - boundsPoint.y;
         float edgeLengthAtDistance = unitVectorLength * scaledEdgeLength;
         float tessellationFactor = edgeLengthAtDistance / LodNode.DESIRED_EDGE_LENGTH;
-        float lodLevel = Mathf.Log(tessellationFactor, 2f);
+        float lodLevel = Mathf.Log(tessellationFactor, 6f);
         return lodLevel;
     }
 
     private bool ShouldSplit()
     {
-        float maxGeoError = Mathf.Pow(2f, LodNode.MAX_LOD_LEVEL - this.lodLevel);
-        float K = Screen.width / (2f * Mathf.Tan((Camera.main.fieldOfView / 2f) * Mathf.Deg2Rad));
-        float maxVerError = (maxGeoError / Mathf.Sqrt(this.meshRenderer.bounds.SqrDistance(Camera.main.transform.position))) * K;
-        return maxVerError > 512f;
-        // return this.DesiredLodLevel() > this.lodLevel;
+        // float maxGeoError = Mathf.Pow(2f, LodNode.MAX_LOD_LEVEL - this.lodLevel);
+        // float K = Screen.width / (2f * Mathf.Tan((Camera.main.fieldOfView / 2f) * Mathf.Deg2Rad));
+        // float maxVerError = (maxGeoError / Mathf.Sqrt(this.meshRenderer.bounds.SqrDistance(Camera.main.transform.position))) * K;
+        // return maxVerError > 2048f;
+        return this.DesiredLodLevel() > this.lodLevel;
     }
 }

@@ -74,7 +74,8 @@ Shader "Custom/LOD Tessellation Shader"
 	            float4 p2 = patch[2].vertex;
 
 	            TessellationFactors f;
-                float3 tessellation = UnityEdgeLengthBasedTessCull(p0, p1, p2, _TessellationEdgeLength, 0.0);
+                // float3 tessellation = UnityEdgeLengthBasedTessCull(p0, p1, p2, _TessellationEdgeLength, 128.0);
+                float3 tessellation = UnityEdgeLengthBasedTess(p0, p1, p2, _TessellationEdgeLength);
 	            f.edge[0] = tessellation[0];
 	            f.edge[1] = tessellation[1];
 	            f.edge[2] = tessellation[2];
@@ -146,7 +147,5 @@ Shader "Custom/LOD Tessellation Shader"
 
             ENDCG
         }
-
-        UsePass "Legacy Shaders/VertexLit/SHADOWCASTER"
     }
 }
