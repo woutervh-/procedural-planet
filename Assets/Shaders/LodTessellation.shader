@@ -116,8 +116,8 @@ Shader "Custom/LOD Tessellation Shader"
                 o.worldNormal = UnityObjectToWorldNormal(v.normal);
                 o.tangent = v.tangent;
                 o.worldTangent = float4(UnityObjectToWorldDir(v.tangent.xyz), v.tangent.w);
-                TRANSFER_SHADOW(o)
                 o.h = h;
+                TRANSFER_SHADOW(o)
                 return o;
             }
             
@@ -143,6 +143,96 @@ Shader "Custom/LOD Tessellation Shader"
                 // o.Albedo = _ColorTint;
                 // o.Smoothness = _Smoothness;
                 // o.Metallic = _Metallic;
+            }
+
+            ENDCG
+        }
+
+        Pass
+        {
+            Tags { "LightMode" = "ShadowCaster" }
+
+            CGPROGRAM
+
+            #pragma vertex VertexProgram
+            #pragma fragment FragmentProgram
+            #pragma hull HullProgram
+            #pragma domain DomainProgram
+
+            #include "UnityCG.cginc"
+            #include "Tessellation.cginc"
+            #include "Lighting.cginc"
+            #include "AutoLight.cginc"
+            #include "Noise.cginc"
+
+            #pragma multi_compile_shadowcaster
+            
+            struct VertexData {
+                float4 vertex : POSITION;
+                float3 normal : NORMAL;
+            };
+
+            struct TessellationFactors {
+                float edge[3] : SV_TessFactor;
+                float inside : SV_InsideTessFactor;
+            };
+            
+            struct Interpolators {
+                float4 pos : SV_POSITION;
+            };
+            
+            float4 _ColorTint;
+            float _TessellationEdgeLength;
+
+            VertexData VertexProgram (VertexData v) {
+                return v;
+            }
+
+            TessellationFactors PatchConstantFunction (InputPatch<VertexData, 3> patch) {
+	            float4 p0 = patch[0].vertex;
+	            float4 p1 = patch[1].vertex;
+	            float4 p2 = patch[2].vertex;
+
+	            TessellationFactors f;
+                // float3 tessellation = UnityEdgeLengthBasedTessCull(p0, p1, p2, _TessellationEdgeLength, 128.0);
+                float3 tessellation = UnityEdgeLengthBasedTess(p0, p1, p2, _TessellationEdgeLength);
+	            f.edge[0] = tessellation[0];
+	            f.edge[1] = tessellation[1];
+	            f.edge[2] = tessellation[2];
+		        f.inside = (tessellation[0] + tessellation[1] + tessellation[2]) / 3.0;
+	            return f;
+            }
+
+            [UNITY_domain("tri")]
+            [UNITY_outputcontrolpoints(3)]
+            [UNITY_outputtopology("triangle_cw")]
+            [UNITY_partitioning("fractional_odd")]
+            [UNITY_patchconstantfunc("PatchConstantFunction")]
+            VertexData HullProgram (InputPatch<VertexData, 3> patch, uint id : SV_OutputControlPointID) {
+	            return patch[id];
+            }
+
+            [UNITY_domain("tri")]
+            Interpolators DomainProgram (TessellationFactors factors, OutputPatch<VertexData, 3> patch, float3 barycentricCoordinates : SV_DomainLocation) {
+                #define DOMAIN_PROGRAM_INTERPOLATE(fieldName) \
+		            patch[0].fieldName * barycentricCoordinates.x + \
+		            patch[1].fieldName * barycentricCoordinates.y + \
+		            patch[2].fieldName * barycentricCoordinates.z;
+
+                VertexData v;
+                v.vertex = DOMAIN_PROGRAM_INTERPOLATE(vertex);
+                v.normal = DOMAIN_PROGRAM_INTERPOLATE(normal);
+
+                float3 vertex = normalize(v.vertex.xyz);
+                Interpolators o;
+                v.vertex = float4(vertex * noise(vertex).w, v.vertex.w);
+                o.pos = UnityObjectToClipPos(v.vertex);
+                TRANSFER_SHADOW_CASTER_NORMALOFFSET(o)
+                return o;
+            }
+            
+            fixed4 FragmentProgram (Interpolators i): SV_Target {
+                SHADOW_CASTER_FRAGMENT(i)
             }
 
             ENDCG
