@@ -51,11 +51,13 @@ public class LodFace
                 Vector3 pointOnUnitCube = this.origin + Mathf.Lerp(-1f, 1f, percent.x) * this.forward + Mathf.Lerp(-1f, 1f, percent.y) * this.right;
                 Vector3 pointOnUnitSphere = pointOnUnitCube.normalized;
 
-                Perlin.PerlinSample sample = this.heightGenerator.GetSample(pointOnUnitSphere);
-                // vertices[vertexIndex] = pointOnUnitSphere;
-                // normals[vertexIndex] = pointOnUnitSphere;
-                vertices[vertexIndex] = pointOnUnitSphere * sample.value;
-                normals[vertexIndex] = LodHeightGenerator.GetAdjustedNormal(pointOnUnitSphere, sample.derivative);
+                // Perlin.PerlinSample sample = this.heightGenerator.GetSample(pointOnUnitSphere);
+                // vertices[vertexIndex] = pointOnUnitSphere * sample.value;
+                // normals[vertexIndex] = LodHeightGenerator.GetAdjustedNormal(pointOnUnitSphere, sample.derivative);
+
+                float height = this.heightGenerator.GetHeight(pointOnUnitSphere);
+                vertices[vertexIndex] = pointOnUnitSphere * height;
+                normals[vertexIndex] = pointOnUnitSphere;
 
                 if (x != resolution - 1 && y != resolution - 1)
                 {

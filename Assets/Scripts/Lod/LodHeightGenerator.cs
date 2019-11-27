@@ -27,6 +27,11 @@ public class LodHeightGenerator
         return sample;
     }
 
+    private float GetHeight(Vector3 position, float frequency)
+    {
+        return this.perlin.Value(position * frequency);
+    }
+
     public Perlin.PerlinSample GetSample(Vector3 position)
     {
         float strength = this.properties.strength;
@@ -42,16 +47,19 @@ public class LodHeightGenerator
         return sum + 1f;
     }
 
-    public float GetMaximumValue()
+    public float GetHeight(Vector3 position)
     {
         float strength = this.properties.strength;
-        float range = strength;
+        float frequency = this.properties.frequency;
+        float sum = this.GetHeight(position, frequency) * strength;
         for (int i = 1; i < this.properties.octaves; i++)
         {
             strength *= this.properties.persistence;
-            range += strength;
+            frequency *= this.properties.lacunarity;
+            float height = this.GetHeight(position, frequency) * strength;
+            sum += height;
         }
-        return range + 1f;
+        return sum + 1f;
     }
 
     public static Vector3 GetAdjustedNormal(Vector3 normal, Vector3 derivative)

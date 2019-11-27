@@ -149,6 +149,54 @@ public class Perlin
         return this.gradients;
     }
 
+    public float Value(Vector3 position)
+    {
+        int ix = Perlin.FlooredRemainder(Mathf.FloorToInt(position.x), Perlin.SIZE);
+        int iy = Perlin.FlooredRemainder(Mathf.FloorToInt(position.y), Perlin.SIZE);
+        int iz = Perlin.FlooredRemainder(Mathf.FloorToInt(position.z), Perlin.SIZE);
+        float fx = position.x - Mathf.FloorToInt(position.x);
+        float fy = position.y - Mathf.FloorToInt(position.y);
+        float fz = position.z - Mathf.FloorToInt(position.z);
+        float u = Perlin.Fade(fx);
+        float v = Perlin.Fade(fy);
+        float w = Perlin.Fade(fz);
+
+        int aa = this.hashes[ix + iy * Perlin.SIZE].x + iz;
+        int ab = this.hashes[ix + iy * Perlin.SIZE].y + iz;
+        int ba = this.hashes[ix + iy * Perlin.SIZE].z + iz;
+        int bb = this.hashes[ix + iy * Perlin.SIZE].w + iz;
+
+        Vector3 g000 = this.gradients[aa];
+        Vector3 g100 = this.gradients[ba];
+        Vector3 g010 = this.gradients[ab];
+        Vector3 g110 = this.gradients[bb];
+        Vector3 g001 = this.gradients[aa + 1];
+        Vector3 g101 = this.gradients[ba + 1];
+        Vector3 g011 = this.gradients[ab + 1];
+        Vector3 g111 = this.gradients[bb + 1];
+
+        Vector3 p = new Vector3(fx, fy, fz);
+        float v000 = Vector3.Dot(g000, p + directionLookup[0]);
+        float v100 = Vector3.Dot(g100, p + directionLookup[1]);
+        float v010 = Vector3.Dot(g010, p + directionLookup[2]);
+        float v110 = Vector3.Dot(g110, p + directionLookup[3]);
+        float v001 = Vector3.Dot(g001, p + directionLookup[4]);
+        float v101 = Vector3.Dot(g101, p + directionLookup[5]);
+        float v011 = Vector3.Dot(g011, p + directionLookup[6]);
+        float v111 = Vector3.Dot(g111, p + directionLookup[7]);
+
+        float a = v000;
+        float b = v100 - v000;
+        float c = v010 - v000;
+        float d = v001 - v000;
+        float e = v110 - v010 - v100 + v000;
+        float f = v101 - v001 - v100 + v000;
+        float g = v011 - v001 - v010 + v000;
+        float h = v111 - v011 - v101 + v001 - v110 + v010 + v100 - v000;
+
+        return a + b * u + (c + e * u) * v + (d + f * u + (g + h * u) * v) * w;
+    }
+
     public PerlinSample Sample(Vector3 position)
     {
         int ix = Perlin.FlooredRemainder(Mathf.FloorToInt(position.x), Perlin.SIZE);
