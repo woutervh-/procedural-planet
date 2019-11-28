@@ -5,6 +5,7 @@ Shader "Custom/LOD Tessellation Shader"
         _Smoothness ("Smoothness", Range(0, 1)) = 0
         _Metallic ("Metallic", Range(0, 1)) = 0
         _ColorTint ("Tint", Color) = (1.0, 1.0, 1.0, 1.0)
+        _Emission ("Emission", Color) = (0.0, 0.0, 0.0)
 
         _Gradients2D ("Gradients", 2D) = "white" {}
         _Permutation2D ("Permutation", 2D) = "white" {}
@@ -28,6 +29,8 @@ Shader "Custom/LOD Tessellation Shader"
             #pragma fragment FragmentProgram
             #pragma hull HullProgram
             #pragma domain DomainProgram
+
+            #define FORWARD_BASE_PASS
 
             #include "UnityCG.cginc"
             #include "Tessellation.cginc"
@@ -132,7 +135,6 @@ Shader "Custom/LOD Tessellation Shader"
 
                 ColorInput colorInput;
                 colorInput.worldPos = i.worldPos;
-                colorInput.normal = adjustedNormal;
                 colorInput.worldNormal = worldNormal;
                 colorInput._ShadowCoord = i._ShadowCoord;
                 fixed4 color = GetColor(colorInput);

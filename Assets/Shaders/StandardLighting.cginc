@@ -7,10 +7,10 @@
 float _Smoothness;
 float _Metallic;
 float4 _ColorTint;
+float3 _Emission;
 
 struct ColorInput {
     float3 worldPos;
-    float3 normal;
     float3 worldNormal;
     UNITY_SHADOW_COORDS(a)
 };
@@ -31,14 +31,22 @@ UnityIndirect CreateIndirectLight (ColorInput i, float3 viewDir) {
 	indirectLight.specular = 0;
 
 	#if defined(FORWARD_BASE_PASS) || defined(DEFERRED_PASS)
-		indirectLight.diffuse += max(0, ShadeSH9(float4(i.normal, 1)));
+		indirectLight.diffuse = max(0, ShadeSH9(float4(i.worldNormal, 1)));
 
-		float3 reflectionDir = reflect(-viewDir, i.normal);
+		float3 reflectionDir = reflect(-viewDir, i.worldNormal);
 		float4 envSample = UNITY_SAMPLE_TEXCUBE(unity_SpecCube0, reflectionDir);
 		indirectLight.specular = DecodeHDR(envSample, unity_SpecCube0_HDR);
 	#endif
 
 	return indirectLight;
+}
+
+float3 GetEmission() {
+    #if defined(FORWARD_BASE_PASS) || defined(DEFERRED_PASS)
+		return _Emission;
+	#else
+		return 0;
+	#endif
 }
 
 float4 GetColor(ColorInput i) {
@@ -51,9 +59,10 @@ float4 GetColor(ColorInput i) {
     float oneMinusReflectivity;
     float3 albedo = DiffuseAndSpecularFromMetallic(_ColorTint.rgb, _Metallic, specularTint, oneMinusReflectivity);
 
-    half4 c = UNITY_BRDF_PBS(albedo, specularTint, oneMinusReflectivity, _Smoothness, i.normal, worldViewDir, CreateLight(i), CreateIndirectLight(i, worldViewDir));
-    c.a = _ColorTint.a;
-    return c;
+    half4 color = UNITY_BRDF_PBS(albedo, specularTint, oneMinusReflectivity, _Smoothness, i.worldNormal, worldViewDir, CreateLight(i), CreateIndirectLight(i, worldViewDir));
+    color.rgb += GetEmission();
+    color.a = _ColorTint.a;
+    return color;
 }
 
 #endif
