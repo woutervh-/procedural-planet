@@ -18,7 +18,12 @@ struct ColorInput {
 UnityLight CreateLight (ColorInput i) {
     UnityLight light;
 
-    light.dir = _WorldSpaceLightPos0.xyz;
+    #if defined(POINT) || defined(POINT_COOKIE) || defined(SPOT)
+		light.dir = normalize(_WorldSpaceLightPos0.xyz - i.worldPos.xyz);
+	#else
+		light.dir = _WorldSpaceLightPos0.xyz;
+	#endif
+
     UNITY_LIGHT_ATTENUATION(attenuation, i, i.worldPos.xyz);
 	light.color = _LightColor0.rgb * attenuation;
 
