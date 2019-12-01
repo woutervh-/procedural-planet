@@ -25,7 +25,6 @@ struct Interpolators {
     float4 worldTangent : TEXCOORD4;
     float3 vertex : TEXCOORD5;
     UNITY_SHADOW_COORDS(6)
-    float h : TEXCOORD7;
 };
 
 VertexData VertexProgram (VertexData v) {
@@ -44,7 +43,6 @@ Interpolators DomainProgram (TessellationFactors factors, OutputPatch<VertexData
     v.texcoord = DOMAIN_PROGRAM_INTERPOLATE(texcoord);
 
     Interpolators o;
-    float h = distance(normalize(patch[0].vertex.xyz), normalize(patch[1].vertex.xyz)) / factors.inside / 8;
     UNITY_INITIALIZE_OUTPUT(Interpolators, o);
     o.vertex = normalize(v.vertex.xyz);
     v.vertex = float4(o.vertex.xyz * noise(o.vertex.xyz).w, v.vertex.w);
@@ -54,14 +52,13 @@ Interpolators DomainProgram (TessellationFactors factors, OutputPatch<VertexData
     o.worldNormal = UnityObjectToWorldNormal(v.normal);
     o.tangent = v.tangent;
     o.worldTangent = float4(UnityObjectToWorldDir(v.tangent.xyz), v.tangent.w);
-    o.h = h;
     UNITY_TRANSFER_SHADOW(o, v.uv1)
 
     return o;
 }
 
 fixed4 FragmentProgram (Interpolators i): SV_Target {
-    float3 gradient = finiteDifferenceGradient(i.vertex, i.h).xyz;
+    float3 gradient = noise(i.vertex).xyz;
     float3 adjustedNormal = normalize(i.vertex - gradient);
     float3 worldNormal = UnityObjectToWorldNormal(adjustedNormal);
 
