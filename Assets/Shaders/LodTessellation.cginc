@@ -57,7 +57,7 @@ Interpolators DomainProgram (TessellationFactors factors, OutputPatch<VertexData
     return o;
 }
 
-fixed4 FragmentProgram (Interpolators i): SV_Target {
+ColorOutput FragmentProgram (Interpolators i) {
     float3 gradient = noise(i.vertex).xyz;
     float3 adjustedNormal = normalize(i.vertex - gradient);
     float3 worldNormal = UnityObjectToWorldNormal(adjustedNormal);

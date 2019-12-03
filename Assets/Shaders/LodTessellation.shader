@@ -62,6 +62,24 @@ Shader "Custom/LOD Tessellation Shader"
             ENDCG
 		}
 
+        Pass {
+            Tags {
+                "LightMode" = "Deferred"
+            }
+
+            CGPROGRAM
+
+            #pragma vertex VertexProgram
+            #pragma fragment FragmentProgram
+            #pragma hull HullProgram
+            #pragma domain DomainProgram
+
+            #define DEFERRED_PASS
+            #include "LodTessellation.cginc"
+
+            ENDCG
+        }
+
         Pass
         {
             Tags { "LightMode" = "ShadowCaster" }
