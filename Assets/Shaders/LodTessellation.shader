@@ -84,6 +84,8 @@ Shader "Custom/LOD Tessellation Shader"
         {
             Tags { "LightMode" = "ShadowCaster" }
 
+            Cull Off
+
             CGPROGRAM
 
             #pragma vertex VertexProgram
