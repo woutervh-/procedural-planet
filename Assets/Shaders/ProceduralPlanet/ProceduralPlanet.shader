@@ -4,7 +4,6 @@ Shader "Custom/Procedural Planet" {
         _Smoothness ("Smoothness", Range(0, 1)) = 0.5
         [MainColor] _BaseColor("Color", Color) = (0.5, 0.5, 0.5, 1.0)
         [MainTexture] _BaseMap("Albedo", 2D) = "white" {}
-        _ReceiveShadows("Receive Shadows", Float) = 1.0
 
         [HideInInspector] _Gradients2D ("Gradients", 2D) = "white" {}
         [HideInInspector] _Permutation2D ("Permutation", 2D) = "white" {}
@@ -46,7 +45,9 @@ Shader "Custom/Procedural Planet" {
             // #pragma hull HullProgram
             // #pragma domain DomainProgram
 
-            #include "LitPass.hlsl"
+            #include "Packages/com.unity.render-pipelines.lightweight/Shaders/LitInput.hlsl"
+            #include "Packages/com.unity.render-pipelines.lightweight/Shaders/LitForwardPass.hlsl"
+            // #include "LitPass.hlsl"
 
             ENDHLSL
         }
@@ -62,13 +63,31 @@ Shader "Custom/Procedural Planet" {
 
             HLSLPROGRAM
 
-            #pragma target 2.0
-
             #pragma vertex ShadowPassVertex
             #pragma fragment ShadowPassFragment
 
             #include "Packages/com.unity.render-pipelines.lightweight/Shaders/LitInput.hlsl"
             #include "Packages/com.unity.render-pipelines.lightweight/Shaders/ShadowCasterPass.hlsl"
+
+            ENDHLSL
+        }
+
+        Pass {
+            Name "DepthOnly"
+            Tags {
+                "LightMode" = "DepthOnly"
+            }
+
+            ZWrite On
+            ColorMask 0
+
+            HLSLPROGRAM
+
+            #pragma vertex DepthOnlyVertex
+            #pragma fragment DepthOnlyFragment
+
+            #include "Packages/com.unity.render-pipelines.universal/Shaders/LitInput.hlsl"
+            #include "Packages/com.unity.render-pipelines.universal/Shaders/DepthOnlyPass.hlsl"
 
             ENDHLSL
         }
