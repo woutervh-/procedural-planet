@@ -42,11 +42,14 @@ Shader "Custom/Procedural Planet" {
 
             #pragma vertex LitPassVertex
             #pragma fragment LitPassFragment
-            // #pragma hull HullProgram
-            // #pragma domain DomainProgram
+            #pragma hull Hull
+            #pragma domain Domain
 
+            #define VertexProgram LitPassVertex
+            
             #include "Packages/com.unity.render-pipelines.lightweight/Shaders/LitInput.hlsl"
             #include "Packages/com.unity.render-pipelines.lightweight/Shaders/LitForwardPass.hlsl"
+            #include "TessellationShare.hlsl"
             // #include "LitPass.hlsl"
 
             ENDHLSL
@@ -86,8 +89,8 @@ Shader "Custom/Procedural Planet" {
             #pragma vertex DepthOnlyVertex
             #pragma fragment DepthOnlyFragment
 
-            #include "Packages/com.unity.render-pipelines.universal/Shaders/LitInput.hlsl"
-            #include "Packages/com.unity.render-pipelines.universal/Shaders/DepthOnlyPass.hlsl"
+            #include "Packages/com.unity.render-pipelines.lightweight/Shaders/LitInput.hlsl"
+            #include "Packages/com.unity.render-pipelines.lightweight/Shaders/DepthOnlyPass.hlsl"
 
             ENDHLSL
         }
