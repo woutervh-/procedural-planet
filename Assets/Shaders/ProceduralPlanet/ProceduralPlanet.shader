@@ -44,17 +44,19 @@ Shader "Custom/Procedural Planet" {
             #pragma vertex TessellationVertex
             #pragma hull Hull
             #pragma domain Domain
-            #pragma fragment LitPassFragment
+            #pragma fragment Fragment
 
+            #define REQUIRES_WORLD_SPACE_POS_INTERPOLATOR
             #define TESSELLATION_INTERPOLATE_TANGENT
             #define TESSELLATION_INTERPOLATE_LIGHTMAP_UV
             #define VertexProgram LitPassVertex
+            #define FragmentProgram LitPassFragment
 
             #include "Packages/com.unity.render-pipelines.lightweight/Shaders/LitInput.hlsl"
             #include "Packages/com.unity.render-pipelines.lightweight/Shaders/LitForwardPass.hlsl"
-            #include "TessellationPlanet.hlsl"
+            #include "TessellationPlanetVertex.hlsl"
+            #include "TessellationPlanetFragment.hlsl"
             #include "TessellationShare.hlsl"
-            // #include "LitPass.hlsl"
 
             ENDHLSL
         }
@@ -79,7 +81,7 @@ Shader "Custom/Procedural Planet" {
 
             #include "Packages/com.unity.render-pipelines.lightweight/Shaders/LitInput.hlsl"
             #include "Packages/com.unity.render-pipelines.lightweight/Shaders/ShadowCasterPass.hlsl"
-            #include "TessellationPlanet.hlsl"
+            #include "TessellationPlanetVertex.hlsl"
             #include "TessellationShare.hlsl"
 
             ENDHLSL
@@ -105,7 +107,7 @@ Shader "Custom/Procedural Planet" {
 
             #include "Packages/com.unity.render-pipelines.lightweight/Shaders/LitInput.hlsl"
             #include "TessellationDepthOnlyPass.hlsl"
-            #include "TessellationPlanet.hlsl"
+            #include "TessellationPlanetVertex.hlsl"
             #include "TessellationShare.hlsl"
 
             ENDHLSL
