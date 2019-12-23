@@ -17,7 +17,7 @@ struct TessellationFactors {
     float inside : SV_InsideTessFactor;
 };
 
-Attributes Vertex(Attributes input) {
+Attributes TessellationVertex(Attributes input) {
     return input;
 }
 
@@ -56,11 +56,15 @@ Varyings Domain(TessellationFactors tessFactors, const OutputPatch<Attributes, 3
     Attributes attributes;
     attributes.positionOS = DOMAIN_PROGRAM_INTERPOLATE(positionOS);
     attributes.normalOS = DOMAIN_PROGRAM_INTERPOLATE(normalOS);
-    attributes.tangentOS = DOMAIN_PROGRAM_INTERPOLATE(tangentOS);
+    #ifdef TESSELLATION_INTERPOLATE_TANGENT
+        attributes.tangentOS = DOMAIN_PROGRAM_INTERPOLATE(tangentOS);
+    #endif
     attributes.texcoord = DOMAIN_PROGRAM_INTERPOLATE(texcoord);
-    attributes.lightmapUV = DOMAIN_PROGRAM_INTERPOLATE(lightmapUV);
+    #ifdef TESSELLATION_INTERPOLATE_LIGHTMAP_UV
+        attributes.lightmapUV = DOMAIN_PROGRAM_INTERPOLATE(lightmapUV);
+    #endif
 
-    return TessellationVertex(attributes);
+    return Vertex(attributes);
 }
 
 #endif

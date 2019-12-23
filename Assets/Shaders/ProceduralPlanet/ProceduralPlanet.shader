@@ -41,15 +41,18 @@ Shader "Custom/Procedural Planet" {
             #pragma multi_compile _ _SHADOWS_SOFT
             #pragma multi_compile_fog
 
-            #pragma vertex Vertex
-            #pragma fragment LitPassFragment
+            #pragma vertex TessellationVertex
             #pragma hull Hull
             #pragma domain Domain
+            #pragma fragment LitPassFragment
 
-            #define TessellationVertex LitPassVertex
-            
+            #define TESSELLATION_INTERPOLATE_TANGENT
+            #define TESSELLATION_INTERPOLATE_LIGHTMAP_UV
+            #define VertexProgram LitPassVertex
+
             #include "Packages/com.unity.render-pipelines.lightweight/Shaders/LitInput.hlsl"
             #include "Packages/com.unity.render-pipelines.lightweight/Shaders/LitForwardPass.hlsl"
+            #include "TessellationPlanet.hlsl"
             #include "TessellationShare.hlsl"
             // #include "LitPass.hlsl"
 
@@ -67,11 +70,17 @@ Shader "Custom/Procedural Planet" {
 
             HLSLPROGRAM
 
-            #pragma vertex ShadowPassVertex
+            #pragma vertex TessellationVertex
+            #pragma hull Hull
+            #pragma domain Domain
             #pragma fragment ShadowPassFragment
+
+            #define VertexProgram ShadowPassVertex
 
             #include "Packages/com.unity.render-pipelines.lightweight/Shaders/LitInput.hlsl"
             #include "Packages/com.unity.render-pipelines.lightweight/Shaders/ShadowCasterPass.hlsl"
+            #include "TessellationPlanet.hlsl"
+            #include "TessellationShare.hlsl"
 
             ENDHLSL
         }
@@ -87,11 +96,17 @@ Shader "Custom/Procedural Planet" {
 
             HLSLPROGRAM
 
-            #pragma vertex DepthOnlyVertex
+            #pragma vertex TessellationVertex
+            #pragma hull Hull
+            #pragma domain Domain
             #pragma fragment DepthOnlyFragment
 
+            #define VertexProgram DepthOnlyVertex
+
             #include "Packages/com.unity.render-pipelines.lightweight/Shaders/LitInput.hlsl"
-            #include "Packages/com.unity.render-pipelines.lightweight/Shaders/DepthOnlyPass.hlsl"
+            #include "TessellationDepthOnlyPass.hlsl"
+            #include "TessellationPlanet.hlsl"
+            #include "TessellationShare.hlsl"
 
             ENDHLSL
         }
