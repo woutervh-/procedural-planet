@@ -93,13 +93,13 @@ float4 noise(float3 p) {
     return sum;
 }
 
-// float3 finiteDifferenceGradient(float3 p, float h) {
-//     float f = noise(p).w;
-//     float fx = noise(p + float3(h, 0, 0)).w;
-//     float fy = noise(p + float3(0, h, 0)).w;
-//     float fz = noise(p + float3(0, 0, h)).w;
+float3 finiteDifferenceGradient(float3 p, float h) {
+    float f = noise(p).w;
+    float fx = noise(p + float3(h, 0, 0)).w;
+    float fy = noise(p + float3(0, h, 0)).w;
+    float fz = noise(p + float3(0, 0, h)).w;
 
-//     return float3((fx - f) / h, (fy - f) / h, (fz - f) / h);
-// }
+    return float3((fx - f) / h, (fy - f) / h, (fz - f) / h);
+}
 
 #endif
