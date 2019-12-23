@@ -1,7 +1,11 @@
 #ifndef PROCEDURAL_PLANET_TESSELLATION_SHARE_INCLUDED
 #define PROCEDURAL_PLANET_TESSELLATION_SHARE_INCLUDED
 
+#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/GeometricTools.hlsl"
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Tessellation.hlsl"
+
+float _TessellationFactor;
+float _TessellationFactorTriangleSize;
 
 #define DOMAIN_PROGRAM_INTERPOLATE(fieldName) \
     input[0].fieldName * baryCoords.x + \
@@ -13,14 +17,31 @@ struct TessellationFactors {
     float inside : SV_InsideTessFactor;
 };
 
-TessellationFactors HullConstant(InputPatch<Attributes, 3> input) {
-    float4 p0 = input[0].positionOS;
-    float4 p1 = input[1].positionOS;
-    float4 p2 = input[2].positionOS;
-
-    // Choose something from: https://github.com/Unity-Technologies/ScriptableRenderPipeline/blob/dc09aba6a4cbd997f11e32a51881bf91d1b55b5e/com.unity.render-pipelines.core/ShaderLibrary/Tessellation.hlsl
+Attributes TessellationVertex(Attributes input) {
+    return input;
 }
 
+TessellationFactors HullConstant(InputPatch<Attributes, 3> input) {
+    float3 p0 = input[0].positionOS.xyz;
+    float3 p1 = input[1].positionOS.xyz;
+    float3 p2 = input[2].positionOS.xyz;
+
+    float3 edgeTessFactors = GetScreenSpaceTessFactor(p0, p1, p2, GetWorldToHClipMatrix(), _ScreenParams, _TessellationFactorTriangleSize);
+    edgeTessFactors *= _TessellationFactor;
+    edgeTessFactors = max(edgeTessFactors, float3(1, 1, 1));
+
+    float4 tessFactors = CalcTriTessFactorsFromEdgeTessFactors(edgeTessFactors);
+
+    TessellationFactors output;
+    output.edge[0] = tessFactors[0];
+    output.edge[1] = tessFactors[1];
+    output.edge[2] = tessFactors[2];
+    output.inside = tessFactors[3];
+
+    return output;
+}
+
+[maxtessfactor(64.0)]
 [domain("tri")]
 [partitioning("fractional_odd")]
 [outputtopology("triangle_cw")]

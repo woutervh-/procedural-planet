@@ -13,7 +13,8 @@ Shader "Custom/Procedural Planet" {
         _Persistence ("Persistence", Float) = 0.5
         _Octaves ("Octaves", Int) = 8
 
-        _TessellationEdgeLength ("Tessellation Edge Length", Range(2, 50)) = 15
+        _TessellationFactor("Tessellation Factor", Range(0.0, 64.0)) = 4.0
+        _TessellationFactorTriangleSize ("Tessellation triangle size", Float) = 100.0
     }
 
     SubShader {
@@ -40,7 +41,7 @@ Shader "Custom/Procedural Planet" {
             #pragma multi_compile _ _SHADOWS_SOFT
             #pragma multi_compile_fog
 
-            #pragma vertex LitPassVertex
+            #pragma vertex TessellationVertex
             #pragma fragment LitPassFragment
             #pragma hull Hull
             #pragma domain Domain
