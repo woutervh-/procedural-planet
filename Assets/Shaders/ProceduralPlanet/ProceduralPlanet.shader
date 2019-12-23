@@ -41,12 +41,12 @@ Shader "Custom/Procedural Planet" {
             #pragma multi_compile _ _SHADOWS_SOFT
             #pragma multi_compile_fog
 
-            #pragma vertex TessellationVertex
+            #pragma vertex Vertex
             #pragma fragment LitPassFragment
             #pragma hull Hull
             #pragma domain Domain
 
-            #define VertexProgram LitPassVertex
+            #define TessellationVertex LitPassVertex
             
             #include "Packages/com.unity.render-pipelines.lightweight/Shaders/LitInput.hlsl"
             #include "Packages/com.unity.render-pipelines.lightweight/Shaders/LitForwardPass.hlsl"

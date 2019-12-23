@@ -17,7 +17,7 @@ struct TessellationFactors {
     float inside : SV_InsideTessFactor;
 };
 
-Attributes TessellationVertex(Attributes input) {
+Attributes Vertex(Attributes input) {
     return input;
 }
 
@@ -60,7 +60,7 @@ Varyings Domain(TessellationFactors tessFactors, const OutputPatch<Attributes, 3
     attributes.texcoord = DOMAIN_PROGRAM_INTERPOLATE(texcoord);
     attributes.lightmapUV = DOMAIN_PROGRAM_INTERPOLATE(lightmapUV);
 
-    return VertexProgram(attributes);
+    return TessellationVertex(attributes);
 }
 
 #endif
