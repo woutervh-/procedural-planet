@@ -94,8 +94,8 @@ Material:
     - _Strength: 0.28
     - _Surface: 0
     - _TessellationEdgeLength: 15
-    - _TessellationFactor: 4
-    - _TessellationFactorTriangleSize: 100
+    - _TessellationFactor: 6
+    - _TessellationFactorTriangleSize: 30
     - _UVSec: 0
     - _WorkflowMode: 1
     - _ZWrite: 1
